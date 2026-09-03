@@ -8,6 +8,7 @@
  */
 import fs from 'node:fs';
 import http from 'node:http';
+import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { google } from 'googleapis';
 import { UserError } from './config.js';
@@ -29,6 +30,8 @@ export function readCredentials(credentialsPath) {
         '  3. OAuth consent screen -> External -> add your own account as a test user\n' +
         '  4. Credentials -> Create credentials -> OAuth client ID -> Desktop app\n' +
         `  5. Download the JSON and save it as ${credentialsPath}\n` +
+        `     (create the directory first: mkdir -p ${path.dirname(credentialsPath)})\n` +
+        'Keep it outside the repository so it can never be committed.\n' +
         'The README walks through this in full.',
     });
   }
@@ -62,7 +65,10 @@ function readToken(tokenPath) {
   }
 }
 
-function writeToken(tokenPath, tokens) {
+export function writeToken(tokenPath, tokens) {
+  // The token lives outside the repository by default, so its directory may
+  // not exist yet on a first run.
+  fs.mkdirSync(path.dirname(tokenPath), { recursive: true, mode: 0o700 });
   fs.writeFileSync(tokenPath, JSON.stringify(tokens, null, 2), { mode: 0o600 });
   try {
     fs.chmodSync(tokenPath, 0o600);

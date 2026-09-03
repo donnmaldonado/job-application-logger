@@ -4,6 +4,7 @@
  * a terminal: what is missing, what it is for, and how to fix it.
  */
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 /**
@@ -19,10 +20,18 @@ export class UserError extends Error {
   }
 }
 
+/**
+ * Where the two secret files live by default: outside the repository, in the
+ * user's config directory. Keeping them out of the working tree means a
+ * mistaken `git add -A` cannot commit a credential, and .gitignore is only a
+ * second line of defence rather than the only one.
+ */
+export const CONFIG_DIR = '~/.config/job-application-logger';
+
 const DEFAULTS = {
   SHEET_TAB_NAME: 'Sheet1',
-  GOOGLE_CREDENTIALS_PATH: './credentials.json',
-  GOOGLE_TOKEN_PATH: './token.json',
+  GOOGLE_CREDENTIALS_PATH: `${CONFIG_DIR}/credentials.json`,
+  GOOGLE_TOKEN_PATH: `${CONFIG_DIR}/token.json`,
   GMAIL_LOOKBACK: '2d',
   GMAIL_PROCESSED_LABEL: 'logged-to-sheet',
   GMAIL_QUERY_EXTRA: '',
@@ -53,6 +62,21 @@ function envValue(name) {
   if (raw === undefined || raw === null) return undefined;
   const trimmed = String(raw).trim();
   return trimmed === '' ? undefined : trimmed;
+}
+
+/**
+ * Expand a leading `~` to the home directory. `path.resolve` does not do this,
+ * so without it a `.env` line pointing at `~/.config/...` would resolve to a
+ * literal `~` directory inside the repository - which is exactly the mistake
+ * this tool's documented layout invites.
+ */
+export function expandHome(p) {
+  const value = String(p ?? '');
+  if (value === '~') return os.homedir();
+  if (value.startsWith('~/') || value.startsWith('~\\')) {
+    return path.join(os.homedir(), value.slice(2));
+  }
+  return value;
 }
 
 function positiveInt(name, fallback) {
@@ -112,9 +136,12 @@ export function loadConfig({ requireSheetId = true, cwd = process.cwd() } = {}) 
 
   const credentialsPath = path.resolve(
     cwd,
-    envValue('GOOGLE_CREDENTIALS_PATH') ?? DEFAULTS.GOOGLE_CREDENTIALS_PATH
+    expandHome(envValue('GOOGLE_CREDENTIALS_PATH') ?? DEFAULTS.GOOGLE_CREDENTIALS_PATH)
   );
-  const tokenPath = path.resolve(cwd, envValue('GOOGLE_TOKEN_PATH') ?? DEFAULTS.GOOGLE_TOKEN_PATH);
+  const tokenPath = path.resolve(
+    cwd,
+    expandHome(envValue('GOOGLE_TOKEN_PATH') ?? DEFAULTS.GOOGLE_TOKEN_PATH)
+  );
 
   return {
     sheetId: sheetId ?? '',

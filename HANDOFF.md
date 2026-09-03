@@ -4,7 +4,11 @@ Implementation spec for a Claude Code skill that batch-logs job application
 emails into a Google Sheet. Written to be built by an agent and published as a
 public GitHub repository.
 
-**Status:** specified, not implemented.
+**Status:** implemented. This file is kept as the original brief, for
+provenance and for the reasoning behind the design. Where it and the README
+disagree, **the README and the code are authoritative** — most importantly, the
+credential and token files now live outside the repository, in
+`~/.config/job-application-logger/`, not in the repo root as sketched below.
 **Target:** Node 22+, ESM, zero build step.
 
 ---
@@ -83,7 +87,7 @@ failure loudly) impossible for the caller to get wrong.
 ### Repository layout
 
 ```
-job-search/
+job-application-logger/
 ├── .claude/
 │   └── skills/
 │       └── log-applications/
@@ -98,9 +102,12 @@ job-search/
 │   ├── config.js          # env loading + validation, single source of truth
 │   ├── gmail.js           # search, fetch, MIME body extraction, labeling
 │   ├── sheets.js          # header detection, read, append, update
-│   └── schema.js          # JSON payload validation for commit.js
+│   ├── schema.js          # JSON payload validation for commit.js
+│   └── fixture.js         # offline input for --fixture
 ├── fixtures/
-│   └── messages.sample.json
+│   ├── messages.sample.json
+│   └── sheet.legacy.json
+├── test/                  # node:test, fixtures only, no network
 ├── .env.example
 ├── .gitignore
 ├── package.json
@@ -134,12 +141,13 @@ SHEET_ID=
 SHEET_TAB_NAME=Sheet1
 
 # ---- Optional: paths (defaults shown) ----
+# Both live outside the repository so they cannot be committed at all.
 
 # OAuth client downloaded from Google Cloud Console. Never commit this.
-GOOGLE_CREDENTIALS_PATH=./credentials.json
+GOOGLE_CREDENTIALS_PATH=~/.config/job-application-logger/credentials.json
 
 # Cached refresh token, written on first run. Never commit this.
-GOOGLE_TOKEN_PATH=./token.json
+GOOGLE_TOKEN_PATH=~/.config/job-application-logger/token.json
 
 # ---- Optional: behavior (defaults shown) ----
 
@@ -170,11 +178,17 @@ TIMEZONE=America/New_York
 ```
 node_modules/
 .env
+.env.*
+!.env.example
 credentials.json
 token.json
+client_secret*.json
 *.local.json
 .DS_Store
 ```
+
+These are a second line of defence. The first is that the real credential and
+token files are never in the working tree at all.
 
 **This repository must contain no secrets, no email addresses, no spreadsheet
 IDs, and no message contents.** `fixtures/messages.sample.json` must use
@@ -190,7 +204,8 @@ able to confirm this by reading `.gitignore` and grepping for `@`.
 3. OAuth consent screen → **External**, add your own account as a test user.
    The app stays unverified; that is expected and fine for single-user use.
 4. Credentials → **OAuth client ID** → **Desktop app** → download JSON →
-   save as `credentials.json` in the repo root.
+   save it as `~/.config/job-application-logger/credentials.json`, outside the
+   repository.
 5. `cp .env.example .env`, fill in `SHEET_ID`.
 6. `npm run doctor` — opens a browser once, writes `token.json`, then prints
    the sheet's tabs and detected header row.

@@ -182,31 +182,62 @@ test('every command has --help', () => {
   }
 });
 
+/** The git-ignored files that may hold real secrets. Never opened by a test. */
+function isLocalSecret(name) {
+  const base = name.split('/').pop();
+  if (base === '.env.example') return false;
+  return (
+    base === '.env' ||
+    base.startsWith('.env.') ||
+    base === 'credentials.json' ||
+    base === 'token.json' ||
+    base.startsWith('client_secret') ||
+    base.endsWith('.local.json')
+  );
+}
+
+/** Every file in the repo except the ones git never sees. */
+function repoFiles(dir = root, out = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (['node_modules', '.git'].includes(entry.name)) continue;
+    const full = `${dir}${entry.name}${entry.isDirectory() ? '/' : ''}`;
+    if (entry.isDirectory()) repoFiles(full, out);
+    else out.push(full);
+  }
+  return out;
+}
+
 test('the repository carries no real email addresses or secrets', () => {
-  const tracked = [
-    'README.md', 'HANDOFF.md', '.env.example', '.gitignore', 'package.json',
-    'fixtures/messages.sample.json', 'fixtures/sheet.legacy.json',
-    '.claude/skills/log-applications/SKILL.md',
-    'src/auth.js', 'src/config.js', 'src/gmail.js', 'src/sheets.js', 'src/schema.js', 'src/fixture.js',
-    'bin/doctor.js', 'bin/fetch.js', 'bin/read-sheet.js', 'bin/commit.js',
-  ];
   const addressPattern = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
   // The one exception: HANDOFF.md's example contract quotes an ATS vendor's
   // public no-reply address. It belongs to no person and identifies no user.
   const allowed = new Set(['no-reply@greenhouse.io']);
-  for (const file of tracked) {
-    const text = fs.readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
+
+  for (const file of repoFiles()) {
+    const name = file.slice(root.length);
+    // Git-ignored local secrets and binaries are never read by this test.
+    if (isLocalSecret(name) || name.endsWith('.DS_Store')) continue;
+
+    const text = fs.readFileSync(file, 'utf8');
     for (const address of text.match(addressPattern) ?? []) {
       assert.ok(
         address.endsWith('example.com') || address.endsWith('example.org') || allowed.has(address),
-        `${file} contains a non-example address: ${address}`
+        `${name} contains a non-example address: ${address}`
       );
     }
+    assert.doesNotMatch(
+      text,
+      /\/(Users|home)\/[a-z][a-z0-9._-]*\//i,
+      `${name} contains an absolute path into someone's home directory`
+    );
   }
 
   const gitignore = fs.readFileSync(new URL('../.gitignore', import.meta.url), 'utf8');
-  for (const secret of ['.env', 'credentials.json', 'token.json']) {
-    assert.match(gitignore, new RegExp(`^${secret.replace('.', '\\.')}$`, 'm'), `${secret} must be ignored`);
+  for (const pattern of ['.env', '.env.*', '!.env.example', 'credentials.json', 'token.json', 'client_secret*.json', '*.local.json']) {
+    assert.ok(
+      gitignore.split('\n').some((line) => line.trim() === pattern),
+      `.gitignore must contain the line "${pattern}"`
+    );
   }
   assert.match(fs.readFileSync(new URL('../.env.example', import.meta.url), 'utf8'), /^SHEET_ID=$/m,
     '.env.example must not carry a real spreadsheet id');
