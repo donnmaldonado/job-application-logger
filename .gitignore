@@ -1,0 +1,13 @@
+node_modules/
+
+# Secrets — these must never be committed.
+# The real files live outside the repo, in ~/.config/job-application-logger/
+.env
+.env.*
+!.env.example
+credentials.json
+token.json
+client_secret*.json
+*.local.json
+
+.DS_Store

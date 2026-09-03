@@ -1,0 +1,59 @@
+{
+  "_comment": "Sheet as it looks before `doctor --migrate`: five columns, header on row 3.",
+  "messages": [],
+  "sheet": {
+    "title": "(fixture) Job search tracker, before migration",
+    "tab": "Applications",
+    "tabs": [
+      "Applications",
+      "Notes",
+      "Archive 2025"
+    ],
+    "values": [
+      [],
+      [
+        "Job search 2026",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "Updated",
+        "Role",
+        "Company",
+        "",
+        ""
+      ],
+      [
+        "8/24",
+        "Analytics Engineer",
+        "Northwind Robotics",
+        "https://example.com/jobs/nr-4471",
+        "referred by a friend"
+      ],
+      [
+        "8/25",
+        "Data Engineer",
+        "Vantage Grid",
+        "",
+        ""
+      ],
+      [
+        "8/28",
+        "Senior Analyst",
+        "Aurora Labs",
+        "",
+        "take-home sent"
+      ],
+      [],
+      [
+        "9/1",
+        "Business Systems Analyst",
+        "Kestrel Freight",
+        "",
+        ""
+      ]
+    ]
+  }
+}

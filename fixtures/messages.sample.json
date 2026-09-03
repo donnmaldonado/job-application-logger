@@ -1,0 +1,341 @@
+{
+  "_comment": "Offline fixture for --fixture runs and tests. Invented companies, example.com senders, no real mail. Bodies are base64url, as Gmail returns them.",
+  "resultSizeEstimate": 6,
+  "messages": [
+    {
+      "id": "fixture0000000001",
+      "threadId": "fixture0000000001",
+      "internalDate": "1788451320000",
+      "snippet": "Thanks for applying to the Analytics Engineer role at Northwind Robotics. Your application has been received&hellip;",
+      "payload": {
+        "mimeType": "multipart/mixed",
+        "headers": [
+          {
+            "name": "From",
+            "value": "\"Northwind Robotics\" <no-reply@greenhouse.example.com>"
+          },
+          {
+            "name": "To",
+            "value": "applicant@example.com"
+          },
+          {
+            "name": "Subject",
+            "value": "Thank you for applying to Northwind Robotics"
+          },
+          {
+            "name": "Date",
+            "value": "Wed, 2 Sep 2026 14:22:00 -0400"
+          }
+        ],
+        "parts": [
+          {
+            "mimeType": "multipart/alternative",
+            "filename": "",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "multipart/alternative; boundary=\"b1\""
+              }
+            ],
+            "parts": [
+              {
+                "partId": "0.0",
+                "mimeType": "text/plain",
+                "filename": "",
+                "body": {
+                  "size": 406,
+                  "data": "SGkgQWxleCwKCgogICAgICAgIFRoYW5rcyBmb3IgYXBwbHlpbmcgdG8gdGhlICAgQW5hbHl0aWNzIEVuZ2luZWVyICAgcm9sZSBhdCBOb3J0aHdpbmQgUm9ib3RpY3MuCgogICAgICAgIFlvdXIgYXBwbGljYXRpb24gaGFzIGJlZW4gcmVjZWl2ZWQgYW5kIGlzIHVuZGVyIHJldmlldyBieSBvdXIgaGlyaW5nIHRlYW0uCiAgICAgICAgV2UgcmV2aWV3IGV2ZXJ5IGFwcGxpY2F0aW9uIOKAlCB5b3XigJlsbCBoZWFyIGZyb20gdXMgZWl0aGVyIHdheS4KCiAgICAgICAgUm9sZTogQW5hbHl0aWNzIEVuZ2luZWVyIChSZW1vdGUg4oCUIFVTKQogICAgICAgIFJlcSBJRDogTlItNDQ3MSB-IAoKICAgICAgICBRdWVzdGlvbnM_CiAgICAgICAg4oCUIFRoZSBOb3J0aHdpbmQgUm9ib3RpY3MgVGFsZW50IFRlYW0sIHZpYSBHcmVlbmhvdXNl"
+                }
+              },
+              {
+                "partId": "0.1",
+                "mimeType": "text/html",
+                "filename": "",
+                "body": {
+                  "size": 172,
+                  "data": "PGh0bWw-PGhlYWQ-PHN0eWxlPi54e2NvbG9yOiNmZmZ9PC9zdHlsZT48L2hlYWQ-PGJvZHk-CjxwPkhpIEFsZXgsPC9wPjxwPlRoYW5rcyBmb3IgYXBwbHlpbmcgdG8gdGhlIDxiPkFuYWx5dGljcyBFbmdpbmVlcjwvYj4gcm9sZSBhdCBOb3J0aHdpbmQgUm9ib3RpY3MuPC9wPgo8L2JvZHk-PC9odG1sPg"
+                }
+              }
+            ]
+          },
+          {
+            "partId": "1",
+            "mimeType": "application/pdf",
+            "filename": "application-summary.pdf",
+            "body": {
+              "size": 91234,
+              "attachmentId": "ANGjdJ-fixture-attachment-id"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "fixture0000000002",
+      "threadId": "fixture0000000002",
+      "internalDate": "1788537720000",
+      "snippet": "Thank you for your interest in the Data Engineer position at Vantage Grid. After careful review&hellip;",
+      "payload": {
+        "mimeType": "text/html",
+        "headers": [
+          {
+            "name": "From",
+            "value": "Vantage Grid Recruiting <no-reply@lever.example.com>"
+          },
+          {
+            "name": "To",
+            "value": "applicant@example.com"
+          },
+          {
+            "name": "Subject",
+            "value": "Your application to Vantage Grid"
+          },
+          {
+            "name": "Date",
+            "value": "Thu, 3 Sep 2026 14:22:00 -0400"
+          }
+        ],
+        "body": {
+          "size": 704,
+          "data": "PCFkb2N0eXBlIGh0bWw-CjxodG1sPjxoZWFkPjx0aXRsZT5BcHBsaWNhdGlvbiB1cGRhdGU8L3RpdGxlPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI-CiAgLndyYXBwZXIgeyBwYWRkaW5nOiAyNHB4OyB9Cjwvc3R5bGU-PC9oZWFkPgo8Ym9keT4KICA8IS0tIHByZWhlYWRlciAtLT4KICA8dGFibGU-PHRyPjx0ZD4KICAgIDxwPkhpIEFsZXgsPC9wPgogICAgPHA-VGhhbmsgeW91IGZvciB5b3VyIGludGVyZXN0IGluIHRoZSA8c3Ryb25nPkRhdGEmbmJzcDtFbmdpbmVlcjwvc3Ryb25nPiBwb3NpdGlvbiBhdCBWYW50YWdlJm5ic3A7R3JpZC48L3A-CiAgICA8cD5BZnRlciBjYXJlZnVsIHJldmlldywgd2UmIzM5O3ZlIGRlY2lkZWQgdG8gbW92ZSBmb3J3YXJkIHdpdGggb3RoZXIgY2FuZGlkYXRlcyB3aG9zZQogICAgICAgZXhwZXJpZW5jZSBtb3JlIGNsb3NlbHkgbWF0Y2hlcyB3aGF0IHdlJnJzcXVvO3JlIGxvb2tpbmcgZm9yIHJpZ2h0IG5vdy48L3A-CiAgICA8cD5XZSYjMzk7ZCBlbmNvdXJhZ2UgeW91IHRvIGFwcGx5IGFnYWluICZtZGFzaDsgd2UgcG9zdCBuZXcgcm9sZXMgb2Z0ZW4uPC9wPgogICAgPHA-QmVzdCw8YnI-VGhlIFZhbnRhZ2UgR3JpZCBSZWNydWl0aW5nIFRlYW08L3A-CiAgPC90ZD48L3RyPjwvdGFibGU-CiAgPHNjcmlwdD5jb25zb2xlLmxvZygndHJhY2tpbmcgcGl4ZWwnKTs8L3NjcmlwdD4KPC9ib2R5PjwvaHRtbD4"
+        }
+      }
+    },
+    {
+      "id": "fixture0000000003",
+      "threadId": "fixture0000000003",
+      "internalDate": "1788544920000",
+      "snippet": "I really enjoyed reading your application for the Senior Analyst opening at Aurora Labs&hellip;",
+      "payload": {
+        "mimeType": "text/plain",
+        "headers": [
+          {
+            "name": "From",
+            "value": "Priya Raman <priya@aurora-labs.example.com>"
+          },
+          {
+            "name": "To",
+            "value": "applicant@example.com"
+          },
+          {
+            "name": "Subject",
+            "value": "Intro call for Senior Analyst?"
+          },
+          {
+            "name": "Date",
+            "value": "Thu, 3 Sep 2026 16:22:00 -0400"
+          }
+        ],
+        "body": {
+          "size": 232,
+          "data": "SGkgQWxleCwKCkkgcmVhbGx5IGVuam95ZWQgcmVhZGluZyB5b3VyIGFwcGxpY2F0aW9uIGZvciB0aGUgU2VuaW9yIEFuYWx5c3Qgb3BlbmluZyBhdCBBdXJvcmEgTGFicy4KV291bGQgeW91IGJlIG9wZW4gdG8gYSAzMC1taW51dGUgaW50cm8gY2FsbCB0aGlzIHdlZWs_IEkgaGF2ZSBUaHVyc2RheSAxMDowMCBvcgpGcmlkYXkgMTQ6MDAgb3BlbiAoRWFzdGVybikuCgpCZXN0LApQcml5YQpBdXJvcmEgTGFicw"
+        }
+      }
+    },
+    {
+      "id": "fixture0000000004",
+      "threadId": "fixture0000000004",
+      "snippet": "Thank you for your interest in employment opportunities at Meridian Health&hellip;",
+      "payload": {
+        "mimeType": "multipart/mixed",
+        "headers": [
+          {
+            "name": "From",
+            "value": "\"Meridian Health\" <workday-noreply@myworkday.example.com>"
+          },
+          {
+            "name": "To",
+            "value": "applicant@example.com"
+          },
+          {
+            "name": "Subject",
+            "value": "Thank you for your application"
+          },
+          {
+            "name": "Date",
+            "value": "Thu, 3 Sep 2026 09:05:00 -0400"
+          }
+        ],
+        "parts": [
+          {
+            "mimeType": "multipart/related",
+            "filename": "",
+            "parts": [
+              {
+                "mimeType": "multipart/alternative",
+                "filename": "",
+                "parts": [
+                  {
+                    "partId": "0.0.0",
+                    "mimeType": "text/plain",
+                    "filename": "",
+                    "body": {
+                      "size": 2133,
+                      "data": "RGVhciBBcHBsaWNhbnQsCgpUaGFuayB5b3UgZm9yIHlvdXIgaW50ZXJlc3QgaW4gZW1wbG95bWVudCBvcHBvcnR1bml0aWVzIGF0IE1lcmlkaWFuIEhlYWx0aC4KVGhpcyBtZXNzYWdlIGNvbmZpcm1zIHRoYXQgd2UgaGF2ZSByZWNlaXZlZCB5b3VyIGFwcGxpY2F0aW9uLgoKWW91ciBhcHBsaWNhdGlvbiBoYXMgYmVlbiByZWNlaXZlZC4gT3VyIHJlY3J1aXRpbmcgdGVhbSByZXZpZXdzIGV2ZXJ5IHN1Ym1pc3Npb24gYW5kIHdpbGwgY29udGFjdCB5b3UgaWYgeW91ciBiYWNrZ3JvdW5kIGlzIGEgbWF0Y2ggZm9yIHRoZSByb2xlLiBQbGVhc2UgZG8gbm90IHJlcGx5IHRvIHRoaXMgbWVzc2FnZTsgdGhpcyBtYWlsYm94IGlzIG5vdCBtb25pdG9yZWQuIFlvdXIgYXBwbGljYXRpb24gaGFzIGJlZW4gcmVjZWl2ZWQuIE91ciByZWNydWl0aW5nIHRlYW0gcmV2aWV3cyBldmVyeSBzdWJtaXNzaW9uIGFuZCB3aWxsIGNvbnRhY3QgeW91IGlmIHlvdXIgYmFja2dyb3VuZCBpcyBhIG1hdGNoIGZvciB0aGUgcm9sZS4gUGxlYXNlIGRvIG5vdCByZXBseSB0byB0aGlzIG1lc3NhZ2U7IHRoaXMgbWFpbGJveCBpcyBub3QgbW9uaXRvcmVkLiBZb3VyIGFwcGxpY2F0aW9uIGhhcyBiZWVuIHJlY2VpdmVkLiBPdXIgcmVjcnVpdGluZyB0ZWFtIHJldmlld3MgZXZlcnkgc3VibWlzc2lvbiBhbmQgd2lsbCBjb250YWN0IHlvdSBpZiB5b3VyIGJhY2tncm91bmQgaXMgYSBtYXRjaCBmb3IgdGhlIHJvbGUuIFBsZWFzZSBkbyBub3QgcmVwbHkgdG8gdGhpcyBtZXNzYWdlOyB0aGlzIG1haWxib3ggaXMgbm90IG1vbml0b3JlZC4gWW91ciBhcHBsaWNhdGlvbiBoYXMgYmVlbiByZWNlaXZlZC4gT3VyIHJlY3J1aXRpbmcgdGVhbSByZXZpZXdzIGV2ZXJ5IHN1Ym1pc3Npb24gYW5kIHdpbGwgY29udGFjdCB5b3UgaWYgeW91ciBiYWNrZ3JvdW5kIGlzIGEgbWF0Y2ggZm9yIHRoZSByb2xlLiBQbGVhc2UgZG8gbm90IHJlcGx5IHRvIHRoaXMgbWVzc2FnZTsgdGhpcyBtYWlsYm94IGlzIG5vdCBtb25pdG9yZWQuIFlvdXIgYXBwbGljYXRpb24gaGFzIGJlZW4gcmVjZWl2ZWQuIE91ciByZWNydWl0aW5nIHRlYW0gcmV2aWV3cyBldmVyeSBzdWJtaXNzaW9uIGFuZCB3aWxsIGNvbnRhY3QgeW91IGlmIHlvdXIgYmFja2dyb3VuZCBpcyBhIG1hdGNoIGZvciB0aGUgcm9sZS4gUGxlYXNlIGRvIG5vdCByZXBseSB0byB0aGlzIG1lc3NhZ2U7IHRoaXMgbWFpbGJveCBpcyBub3QgbW9uaXRvcmVkLiBZb3VyIGFwcGxpY2F0aW9uIGhhcyBiZWVuIHJlY2VpdmVkLiBPdXIgcmVjcnVpdGluZyB0ZWFtIHJldmlld3MgZXZlcnkgc3VibWlzc2lvbiBhbmQgd2lsbCBjb250YWN0IHlvdSBpZiB5b3VyIGJhY2tncm91bmQgaXMgYSBtYXRjaCBmb3IgdGhlIHJvbGUuIFBsZWFzZSBkbyBub3QgcmVwbHkgdG8gdGhpcyBtZXNzYWdlOyB0aGlzIG1haWxib3ggaXMgbm90IG1vbml0b3JlZC4gWW91ciBhcHBsaWNhdGlvbiBoYXMgYmVlbiByZWNlaXZlZC4gT3VyIHJlY3J1aXRpbmcgdGVhbSByZXZpZXdzIGV2ZXJ5IHN1Ym1pc3Npb24gYW5kIHdpbGwgY29udGFjdCB5b3UgaWYgeW91ciBiYWNrZ3JvdW5kIGlzIGEgbWF0Y2ggZm9yIHRoZSByb2xlLiBQbGVhc2UgZG8gbm90IHJlcGx5IHRvIHRoaXMgbWVzc2FnZTsgdGhpcyBtYWlsYm94IGlzIG5vdCBtb25pdG9yZWQuIFlvdXIgYXBwbGljYXRpb24gaGFzIGJlZW4gcmVjZWl2ZWQuIE91ciByZWNydWl0aW5nIHRlYW0gcmV2aWV3cyBldmVyeSBzdWJtaXNzaW9uIGFuZCB3aWxsIGNvbnRhY3QgeW91IGlmIHlvdXIgYmFja2dyb3VuZCBpcyBhIG1hdGNoIGZvciB0aGUgcm9sZS4gUGxlYXNlIGRvIG5vdCByZXBseSB0byB0aGlzIG1lc3NhZ2U7IHRoaXMgbWFpbGJveCBpcyBub3QgbW9uaXRvcmVkLiBZb3VyIGFwcGxpY2F0aW9uIGhhcyBiZWVuIHJlY2VpdmVkLiBPdXIgcmVjcnVpdGluZyB0ZWFtIHJldmlld3MgZXZlcnkgc3VibWlzc2lvbiBhbmQgd2lsbCBjb250YWN0IHlvdSBpZiB5b3VyIGJhY2tncm91bmQgaXMgYSBtYXRjaCBmb3IgdGhlIHJvbGUuIFBsZWFzZSBkbyBub3QgcmVwbHkgdG8gdGhpcyBtZXNzYWdlOyB0aGlzIG1haWxib3ggaXMgbm90IG1vbml0b3JlZC4gCgpNZXJpZGlhbiBIZWFsdGggaXMgYW4gZXF1YWwgb3Bwb3J0dW5pdHkgZW1wbG95ZXIu"
+                    }
+                  }
+                ]
+              },
+              {
+                "partId": "0.1",
+                "mimeType": "image/png",
+                "filename": "logo.png",
+                "body": {
+                  "size": 4211,
+                  "attachmentId": "ANGjdJ_fixture-logo-id"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "fixture0000000005",
+      "threadId": "fixture0000000005",
+      "internalDate": "1788533000000",
+      "snippet": "12 new jobs matching &quot;analytics engineer&quot;",
+      "payload": {
+        "mimeType": "text/html",
+        "headers": [
+          {
+            "name": "From",
+            "value": "Job Alerts <alerts@jobboard.example.com>"
+          },
+          {
+            "name": "To",
+            "value": "applicant@example.com"
+          },
+          {
+            "name": "Subject",
+            "value": "12 new jobs for you this week"
+          },
+          {
+            "name": "Date",
+            "value": "Thu, 3 Sep 2026 06:03:00 -0400"
+          }
+        ],
+        "body": {
+          "size": 285,
+          "data": "PGh0bWw-PGJvZHk-CiAgPGgxPjEyIG5ldyBqb2JzIG1hdGNoaW5nICZxdW90O2FuYWx5dGljcyBlbmdpbmVlciZxdW90OzwvaDE-CiAgPHVsPgogICAgPGxpPkFuYWx5dGljcyBFbmdpbmVlciAmbWRhc2g7IEJsdWUgSGFyYm9yIEFuYWx5dGljczwvbGk-CiAgICA8bGk-RGF0YSBFbmdpbmVlciAmbWRhc2g7IEtlc3RyZWwgRnJlaWdodDwvbGk-CiAgPC91bD4KICA8cD48YSBocmVmPSJodHRwczovL2V4YW1wbGUuY29tL3Vuc3Vic2NyaWJlIj5VbnN1YnNjcmliZTwvYT48L3A-CjwvYm9keT48L2h0bWw-"
+        }
+      }
+    },
+    {
+      "id": "fixture0000000006",
+      "threadId": "fixture0000000006",
+      "internalDate": "1788548520000",
+      "snippet": "Thanks for applying to Kestrel Freight. We&#39;ve received your application for Business Systems Analyst&hellip;",
+      "payload": {
+        "mimeType": "multipart/alternative",
+        "headers": [
+          {
+            "name": "From",
+            "value": "Kestrel Freight <notifications@ashby.example.com>"
+          },
+          {
+            "name": "To",
+            "value": "applicant@example.com"
+          },
+          {
+            "name": "Subject",
+            "value": "We received your application"
+          },
+          {
+            "name": "Date",
+            "value": "Thu, 3 Sep 2026 17:22:00 -0400"
+          }
+        ],
+        "parts": [
+          {
+            "partId": "0",
+            "mimeType": "text/plain",
+            "filename": "",
+            "body": {
+              "size": 0
+            }
+          },
+          {
+            "partId": "1",
+            "mimeType": "text/html",
+            "filename": "",
+            "body": {
+              "size": 263,
+              "data": "PGh0bWw-PGJvZHk-CiAgPHA-SGkgQWxleCw8L3A-CiAgPHA-VGhhbmtzIGZvciBhcHBseWluZyB0byA8Yj5LZXN0cmVsIEZyZWlnaHQ8L2I-LiBXZSYjMzk7dmUgcmVjZWl2ZWQgeW91ciBhcHBsaWNhdGlvbiBmb3IKICAgICA8Yj5CdXNpbmVzcyBTeXN0ZW1zIEFuYWx5c3Q8L2I-IGFuZCB0aGUgdGVhbSBpcyByZXZpZXdpbmcgaXQgbm93LjwvcD4KICA8cD4mbWRhc2g7IEtlc3RyZWwgRnJlaWdodCwgcG93ZXJlZCBieSBBc2hieTwvcD4KPC9ib2R5PjwvaHRtbD4"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "sheet": {
+    "title": "(fixture) Job search tracker",
+    "tab": "Applications",
+    "tabs": [
+      "Applications",
+      "Notes",
+      "Archive 2025"
+    ],
+    "values": [
+      [],
+      [
+        "Job search 2026",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "Updated",
+        "Role",
+        "Company",
+        "",
+        "",
+        "Status",
+        "Last Heard",
+        "Source"
+      ],
+      [
+        "8/24",
+        "Analytics Engineer",
+        "Northwind Robotics",
+        "https://example.com/jobs/nr-4471",
+        "referred by a friend",
+        "applied",
+        "",
+        "manual"
+      ],
+      [
+        "8/25",
+        "Data Engineer",
+        "Vantage Grid",
+        "",
+        "",
+        "applied",
+        "",
+        "manual"
+      ],
+      [
+        "8/28",
+        "Senior Analyst",
+        "Aurora Labs",
+        "",
+        "take-home sent",
+        "applied",
+        "",
+        "manual"
+      ],
+      [],
+      [
+        "9/1",
+        "Business Systems Analyst",
+        "Kestrel Freight",
+        "",
+        "",
+        "applied",
+        "",
+        "manual"
+      ]
+    ]
+  }
+}

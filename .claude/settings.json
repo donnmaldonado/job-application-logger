@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./credentials.json)",
+      "Read(./token.json)",
+      "Read(./client_secret*.json)",
+      "Read(~/.config/job-application-logger/**)"
+    ]
+  }
+}
