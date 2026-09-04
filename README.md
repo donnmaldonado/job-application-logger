@@ -16,12 +16,10 @@ tracking spreadsheet and label the mail so it never comes back.
   in the terminal. No cron, no triggers, no webhooks; you run it.
 - **Email is a floor, not the whole truth.** Plenty of employers never send a
   confirmation, and those applications will never appear.
-
-> [!WARNING]
-> **Unproven against the live APIs.** Everything offline is covered by 89 tests;
-> not one line of the Gmail, Sheets or OAuth code has ever run against Google.
-> Read [What is tested, and what is not](#what-is-tested-and-what-is-not) before
-> you trust it with a spreadsheet you care about.
+- **Run against one real account.** The daily loop — OAuth, Gmail search and
+  labeling, sheet read, append and update — works end to end on the author's
+  mailbox and spreadsheet. A few paths still have not run; see
+  [What is tested, and what is not](#what-is-tested-and-what-is-not).
 
 ## Prerequisites
 
@@ -124,8 +122,8 @@ second run is a no-op, and it refuses to run if those positions are already
 headed or already hold data.
 
 Run `npm run doctor` without `--migrate` first — it prints the same plan as a
-warning without applying it. The plan is tested; the write that applies it has
-never run against a real spreadsheet, so read the plan before you say yes.
+warning without applying it. Read the plan before you say yes: the migration
+rewrites your header row, and it is the one write with no undo.
 
 ## Daily use
 
@@ -257,8 +255,8 @@ npm test
 
 ## What is tested, and what is not
 
-`npm test` is 89 tests over fixtures. **They cover no network call**, because
-this repository was built and reviewed without live Google credentials.
+`npm test` is 89 tests over fixtures. **They cover no network call** — the
+network paths are covered by having actually been run, not by the suite.
 
 **Covered** (`node:test`, fixtures only, no credentials):
 
@@ -276,23 +274,29 @@ this repository was built and reviewed without live Google credentials.
   no-op, and that it refuses a column already in use.
 - Config resolution: defaults, `~` expansion, validation errors, mode `0600`.
 
-**Not covered — code-reviewed only, never executed against Google:**
+**Exercised against Google, but not by the suite** (one account, real
+mailbox and spreadsheet, across several days of ordinary use):
 
-- The entire OAuth flow: consent, loopback redirect, code exchange, token
-  refresh, and the stale-token (`invalid_grant`) recovery path.
-- Every Gmail call (search, fetch, label creation, `batchModify`) and every
-  Sheets call (read, append, `batchUpdate`).
-- The write performed by `doctor --migrate`. Its plan is tested; the request
-  that applies the plan is not.
+- OAuth consent, the loopback redirect, the code exchange, and refreshing a
+  stored token on later runs.
+- Gmail search, message fetch, creating the `logged-to-sheet` label, and
+  applying it with `batchModify`.
+- Sheets read, append, and `batchUpdate` on an existing row.
+- The `doctor --migrate` write that appends the `Status`, `Last Heard` and
+  `Source` columns to a sheet that predates them.
+- End-to-end idempotency: messages labeled on one day's run do not come back
+  in the next day's sweep.
+
+**Still never executed against Google — code-reviewed only:**
+
+- The stale-token (`invalid_grant`) recovery path — no token has expired yet.
 - `explainApiError` — pattern-matching against Google error strings nobody has
   seen come back yet.
-- End-to-end idempotency. That a labeled message stays out of tomorrow's sweep
-  follows from the query, which is tested, but the loop has never run against a
-  live mailbox.
+- Partial-failure reporting: a run where the sheet write lands and the labeling
+  does not, leaving `unlabeled` non-empty.
 
-So: expect the offline behavior to hold, and treat the first live run as the
-first live run. Use `--dry-run`, read the `plan`, and start with a small
-`--since` window.
+So: the daily path is proven on one setup, and the failure paths are not. Use
+`--dry-run` when a payload is large, and start with a small `--since` window.
 
 ## Scopes and secrets
 
