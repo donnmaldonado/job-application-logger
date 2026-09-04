@@ -1,64 +1,40 @@
 # job-application-logger
 
-Once a day, one command: pull the job-application email that arrived since
-yesterday, judge it, show you a table, and - only after you approve - write it
-into your tracking spreadsheet and label the messages so they never come back.
+One command a day: pull the job-application email that arrived since yesterday,
+judge it, print a table, and — only after you approve — write it into your
+tracking spreadsheet and label the mail so it never comes back.
 
-It exists because a job seeker applying to 5-10 roles a day already receives
-every fact they are retyping. The confirmations, rejections and interview
-invites are sitting in Gmail.
+1. `bin/read-sheet.js` reads the applications already in the sheet.
+2. `bin/fetch.js` pulls the Gmail from the last N days that hasn't been logged yet.
+3. Claude, in-session, classifies each message and cross-checks it against the sheet.
+4. You approve the table. `bin/commit.js` writes the rows, then labels the mail.
 
-- **Node 22+, ESM, no build step.**
-- **One dependency:** `googleapis`. Everything else is a Node built-in.
+- **Node 22+, ESM, no build step.** One dependency: `googleapis`.
 - **No LLM API calls in this repo.** The judging happens in the Claude Code
-  session that runs the skill. There is no API key here and no inference bill.
-- **Status: unproven against the live APIs.** Everything offline is covered by
-  89 tests; not one line of the Gmail, Sheets or OAuth code has ever run
-  against Google. Read
-  [What is tested, and what is not](#what-is-tested-and-what-is-not) before you
-  trust it with a spreadsheet you care about.
+  session that runs the skill — no API key here, no inference bill.
+- **Never autonomous.** Nothing reaches the spreadsheet without you approving it
+  in the terminal. No cron, no triggers, no webhooks; you run it.
+- **Email is a floor, not the whole truth.** Plenty of employers never send a
+  confirmation, and those applications will never appear.
 
-## What this is not
+> [!WARNING]
+> **Unproven against the live APIs.** Everything offline is covered by 89 tests;
+> not one line of the Gmail, Sheets or OAuth code has ever run against Google.
+> Read [What is tested, and what is not](#what-is-tested-and-what-is-not) before
+> you trust it with a spreadsheet you care about.
 
-**It is not autonomous.** Nothing reaches your spreadsheet without you
-approving it in the terminal first. That is a deliberate design choice, not a
-missing feature: ATS email is inconsistent enough that extraction will
-sometimes be wrong, and a human glance at a table is cheaper and more reliable
-than engineering the last few percent.
+## Prerequisites
 
-**It is not a daemon.** No cron, no triggers, no webhooks. You run it.
+- **Node 22 or newer** (`node --version`) — the tool uses `--env-file`,
+  `parseArgs` and `process.loadEnvFile`.
+- **A Google Cloud project** with the Gmail and Sheets APIs enabled and a
+  Desktop OAuth client ([step 2](#2-create-a-google-cloud-project)).
+- **A tracking spreadsheet** whose header row contains `Updated`, `Role` and
+  `Company`.
 
-**It is not a complete record of your search.** Plenty of employers never send
-a confirmation. Email is a floor on what gets tracked, not the whole truth.
+## Quick start
 
-## What the OAuth scopes let it do
-
-You will grant exactly two scopes. In plain terms:
-
-| Scope | What it permits |
-|---|---|
-| `https://www.googleapis.com/auth/gmail.modify` | Read any message in your mailbox, including full bodies, and add or remove labels. It can move mail to Trash; it **cannot** permanently delete it. |
-| `https://www.googleapis.com/auth/spreadsheets` | Read and write **any** spreadsheet in your Google Drive, not only the one you configure. Google does not offer a narrower per-file scope for the Sheets API. |
-
-Read access is broader than "the emails this tool cares about" because Gmail
-has no scope for "only messages matching this query". `gmail.modify` is the
-narrowest scope that can both read a body and apply a label, and the label is
-what makes repeat runs idempotent - without it, every run would re-propose the
-same rows.
-
-Everything runs locally, as you. Nothing is sent anywhere except to Google's
-APIs. The OAuth client and the refresh token are written **outside this
-repository**, in `~/.config/job-application-logger/`, so no credential is ever
-in a directory that `git add -A` can reach. The token file is written mode
-`0600`. You can revoke access at any time at
-[myaccount.google.com/permissions](https://myaccount.google.com/permissions).
-
-## Setup
-
-### 1. Clone and install
-
-Node 22 or newer is required (`node --version`); the tool uses `--env-file`,
-`parseArgs` and `process.loadEnvFile`.
+### 1. Install
 
 ```bash
 git clone <this repo> job-application-logger
@@ -66,21 +42,22 @@ cd job-application-logger
 npm install
 ```
 
-### 2. Create a Google Cloud project (one time, ~5 minutes)
+### 2. Create a Google Cloud project
 
-1. Go to [console.cloud.google.com](https://console.cloud.google.com) and
-   create a project (or pick an existing one).
-2. **APIs & Services > Library**: enable the **Gmail API** and the
+One time, about five minutes. See [Scopes and secrets](#scopes-and-secrets) for
+what you are granting.
+
+1. At [console.cloud.google.com](https://console.cloud.google.com), create a
+   project (or pick an existing one).
+2. **APIs & Services → Library**: enable the **Gmail API** and the
    **Google Sheets API**.
-3. **APIs & Services > OAuth consent screen**: choose **External**, fill in
-   the required fields, and add your own Google account as a **test user**.
-   The app stays unverified. That is expected and fine for single-user use -
-   Google will show you a "this app isn't verified" warning during consent,
-   which you can proceed through because you are the developer and the user.
-4. **APIs & Services > Credentials > Create credentials > OAuth client ID >
+3. **APIs & Services → OAuth consent screen**: choose **External**, fill in the
+   required fields, and add your own Google account as a **test user**. The app
+   stays unverified, which is expected for single-user use — proceed through the
+   "this app isn't verified" warning during consent.
+4. **APIs & Services → Credentials → Create credentials → OAuth client ID →
    Desktop app**. Download the JSON.
-5. Move that file **outside the repository**, into the config directory this
-   tool reads by default:
+5. Move it **outside the repository**:
 
    ```bash
    mkdir -p ~/.config/job-application-logger
@@ -88,9 +65,9 @@ npm install
    mv ~/Downloads/client_secret_*.json ~/.config/job-application-logger/credentials.json
    ```
 
-   Do not put it in the repository. `.gitignore` would catch the common
-   filenames, but a secret that is not in the working tree cannot be committed
-   at all, and that is the property worth having.
+   `.gitignore` would catch the common filenames, but a secret that is not in
+   the working tree cannot be committed at all, and that is the property worth
+   having.
 
 ### 3. Configure
 
@@ -98,14 +75,14 @@ npm install
 cp .env.example .env
 ```
 
-`.env` is git-ignored; `.env.example` is not. Set `SHEET_ID` to the part of
-your spreadsheet URL between `/d/` and `/edit`:
+`SHEET_ID` is the only required variable — the part of your spreadsheet URL
+between `/d/` and `/edit`:
 
 ```
 https://docs.google.com/spreadsheets/d/<SHEET_ID>/edit
 ```
 
-`SHEET_ID` is the only required variable. Everything else has a default:
+Everything else has a default:
 
 | Variable | Default | What it does |
 |---|---|---|
@@ -120,39 +97,35 @@ https://docs.google.com/spreadsheets/d/<SHEET_ID>/edit
 | `MAX_BODY_CHARS` | `2000` | Body characters passed downstream, then truncated. |
 | `TIMEZONE` | `America/New_York` | IANA zone used to format `M/D` dates. |
 
-Both path variables expand a leading `~`; a relative path is resolved against
-the directory you run the command from. Keep them pointing outside the repo.
+Both path variables expand a leading `~`; a relative path resolves against the
+directory you run from. Keep them pointing outside the repo.
 
-### 4. First run
+### 4. Authenticate and check the sheet
 
 ```bash
 npm run doctor
 ```
 
-`doctor` requires a `.env` file in the current directory, so do step 3 first.
-It opens a browser once, writes the token to `GOOGLE_TOKEN_PATH`, then prints
-your spreadsheet's tabs, the detected header row, and the columns it found. If
-anything is missing it tells you what to fix, one step at a time.
+Opens a browser once, writes the token to `GOOGLE_TOKEN_PATH`, then prints your
+spreadsheet's tabs, the detected header row and the columns it found. If
+`SHEET_TAB_NAME` doesn't name a real tab, it prints the list and stops. It needs
+a `.env` in the current directory, so do step 3 first.
 
-If `SHEET_TAB_NAME` does not name a real tab, `doctor` prints the list of tabs
-and stops. Set `SHEET_TAB_NAME` in `.env` to one of them and run it again.
-
-### 5. Add the three columns
+### 5. Add the three tracking columns
 
 ```bash
 npm run doctor -- --migrate
 ```
 
-This appends `Status`, `Last Heard` and `Source` to the right of your existing
+Appends `Status`, `Last Heard` and `Source` to the right of your existing
 columns and backfills `applied` / `manual` into the rows already there. It is
-additive by construction: nothing existing is reordered, renamed or rewritten,
-it plans a second run as a no-op, and it refuses to run if those positions are
-already headed or already hold data.
+additive by construction: nothing existing is reordered, renamed or rewritten, a
+second run is a no-op, and it refuses to run if those positions are already
+headed or already hold data.
 
-Run `npm run doctor` without `--migrate` first: it prints the same plan as a
-warning without applying it. The plan is covered by tests; the write that
-applies it has never run against a real spreadsheet, so read the plan before
-you say yes. See [What is tested, and what is not](#what-is-tested-and-what-is-not).
+Run `npm run doctor` without `--migrate` first — it prints the same plan as a
+warning without applying it. The plan is tested; the write that applies it has
+never run against a real spreadsheet, so read the plan before you say yes.
 
 ## Daily use
 
@@ -162,11 +135,22 @@ In Claude Code, from this directory:
 /log-applications 2d
 ```
 
-The skill in `.claude/skills/log-applications/` reads the sheet, fetches
-recent mail, classifies each message, prints a table, waits for your approval,
-and then commits.
+The skill in `.claude/skills/log-applications/` reads the sheet, fetches recent
+mail, classifies each message, prints a table, waits for your approval, then
+commits.
 
-You can also drive the commands by hand:
+The Gmail label (`logged-to-sheet` by default) *is* the deduplication state —
+every fetch subtracts it: `newer_than:2d -label:logged-to-sheet`. `commit.js`
+owns both the sheet write and the label on purpose, because the invariant the
+system rests on is that **a message carries the label if and only if its content
+reached the sheet**. Split across two commands they drift: a write without a
+label duplicates the row tomorrow, a label without a write loses the application
+silently. One command fixes the ordering — write, then label, then report any
+partial failure in `unlabeled`.
+
+### Commands
+
+You can also drive them by hand:
 
 ```bash
 npm run sheet                      # existing rows, with sheet row numbers
@@ -175,8 +159,6 @@ echo '<payload>' | npm run commit -- --dry-run
 echo '<payload>' | npm run commit
 ```
 
-Every command takes `--help` and `--fixture <path>`. The rest:
-
 | Command | Flags |
 |---|---|
 | `bin/doctor.js` | `--migrate` |
@@ -184,13 +166,15 @@ Every command takes `--help` and `--fixture <path>`. The rest:
 | `bin/read-sheet.js` | `--tab <name>`, `--pretty` |
 | `bin/commit.js` | `--dry-run`, `--tab <name>`, `--pretty` |
 
-`--since` takes Gmail duration syntax (`2d`, `12h`, `3w`, `1m`, `1y`); anything
-else is rejected before a request is made. `--max` and `--tab` override
-`MAX_MESSAGES` and `SHEET_TAB_NAME` for one run.
+Every command also takes `--help` and `--fixture <path>`
+([offline mode](#offline-mode)).
 
-`--dry-run` prints the exact rows, cell ranges and message ids it would touch,
-under a `plan` key, with `"dryRun": true`. It reads the sheet to resolve those
-ranges, and writes nothing anywhere.
+- `--since` takes Gmail duration syntax (`2d`, `12h`, `3w`, `1m`, `1y`);
+  anything else is rejected before a request is made.
+- `--max` and `--tab` override `MAX_MESSAGES` and `SHEET_TAB_NAME` for one run.
+- `--dry-run` prints the exact rows, cell ranges and message ids it would touch
+  under a `plan` key, with `"dryRun": true`. It reads the sheet to resolve those
+  ranges and writes nothing anywhere.
 
 ## The sheet
 
@@ -205,67 +189,23 @@ ranges, and writes nothing anywhere.
 | G | `Last Heard` | `M/D` of the most recent email about this application |
 | H | `Source` | `manual` / `auto` |
 
-The header row is **not** assumed to be row 1. The tools scan the first ten
-rows for one containing `Updated`, `Role` and `Company`, and data starts on the
-row after it. The letters above are the usual result, not an assumption: every
-column is addressed by where its header actually is.
+The header row is **not** assumed to be row 1. The tools scan the first ten rows
+for one containing `Updated`, `Role` and `Company`; data starts on the row after
+it. The letters above are the usual result, not an assumption — every column is
+addressed by where its header actually is.
 
 Updates only ever touch the `Status` and `Last Heard` cells of a row. A payload
 that tries to set `updated`, `role`, `company`, `link` or `notes` on an update
 is rejected outright, so a status change can never overwrite your apply date or
 a hand-written note.
 
-## How it works
-
-```
-  /log-applications 2d
-        |
-        +-- bin/read-sheet.js ....... existing rows + 1-indexed row numbers
-        +-- bin/fetch.js --since 2d . candidate emails as JSON
-        |
-        +-- Claude (in-session) judges each email, extracts company and role,
-        |   and cross-checks against the existing rows
-        |
-        +-- table printed, you approve or correct
-        |
-        +-- bin/commit.js ........... 1. write the sheet rows
-                                      2. only then apply the Gmail label
-```
-
-`commit.js` owns both the write and the label on purpose. The system's core
-invariant is that **a message carries the processed label if and only if its
-content reached the sheet**. Split across two commands, they drift: a write
-without a label means tomorrow's run duplicates the row, and a label without a
-write means the application is lost silently and forever. Keeping both behind
-one command fixes the ordering - write first, label second, report partial
-failure loudly in `unlabeled` - where the caller cannot get it wrong.
-
-The Gmail label (`logged-to-sheet` by default) *is* the deduplication state.
-Every fetch subtracts it: `newer_than:2d -label:logged-to-sheet`.
-
 ## JSON contracts
 
-`bin/fetch.js` -> stdout:
+`fetch.js` and `read-sheet.js` print their shapes on demand — run either with
+`--fixture ... --pretty` ([offline mode](#offline-mode)) to see one. The
+contract worth writing down is `commit.js`, because it is the one you generate.
 
-```json
-{ "query": "newer_than:2d -label:logged-to-sheet", "fetchedAt": "2026-09-03T18:04:11.000Z",
-  "count": 3, "truncated": false,
-  "messages": [ { "id": "...", "threadId": "...", "date": "...", "from": "...",
-                  "fromName": "...", "subject": "...", "snippet": "...", "body": "..." } ] }
-```
-
-`bin/read-sheet.js` -> stdout:
-
-```json
-{ "tab": "Sheet1", "headerRow": 2,
-  "columns": { "updated": "A", "role": "B", "company": "C", "link": "D",
-               "notes": "E", "status": "F", "lastHeard": "G", "source": "H" },
-  "rows": [ { "row": 3, "updated": "8/24", "role": "Analytics Engineer",
-              "company": "Northwind Robotics", "status": "applied",
-              "lastHeard": "", "source": "manual" } ] }
-```
-
-`bin/commit.js` <- stdin:
+Stdin:
 
 ```json
 { "appends": [ { "updated": "9/3", "role": "Analytics Engineer", "company": "Northwind Robotics",
@@ -275,27 +215,25 @@ Every fetch subtracts it: `newer_than:2d -label:logged-to-sheet`.
   "labelOnly": ["..."] }
 ```
 
-`bin/commit.js` -> stdout:
+Stdout:
 
 ```json
 { "appended": 1, "updated": 1, "labeled": 3, "errors": [], "unlabeled": [] }
 ```
 
-`unlabeled` lists messages whose sheet write succeeded but whose labeling
-failed. They will resurface on the next run and produce duplicates, which is
-why the skill surfaces them instead of swallowing them.
-
-Details worth knowing before you generate these by hand:
-
-- `columns` carries only the columns the sheet actually has: on a sheet that
-  has not been migrated, `status`, `lastHeard` and `source` are simply absent.
-- A `rows` entry never reports `link` or `notes`. Those are yours; the tool
-  reads past them and never writes them.
-- An `appends` entry may not set `source`. Appended rows are always written
-  `auto`.
-- Exit codes from `commit.js`: `0` success, `2` the payload was rejected and
-  nothing was written or labeled, `1` something was attempted and part of it
-  failed — read `errors` and `unlabeled`.
+- An `appends` entry may not set `source`. Appended rows are always `auto`.
+- `updates` addresses rows by the 1-indexed `row` that `read-sheet.js` reports,
+  and may only carry `status` and `lastHeard`.
+- `unlabeled` lists messages whose sheet write succeeded but whose labeling
+  failed. They resurface next run and produce duplicates, which is why the skill
+  surfaces them instead of swallowing them.
+- Exit codes: `0` success, `2` the payload was rejected and nothing was written
+  or labeled, `1` something was attempted and part of it failed — read `errors`
+  and `unlabeled`.
+- `read-sheet.js` reports only the columns the sheet actually has: on an
+  unmigrated sheet, `status`, `lastHeard` and `source` are simply absent. It
+  never reports `link` or `notes` — those are yours; the tool reads past them
+  and never writes them.
 
 ## Offline mode
 
@@ -309,80 +247,82 @@ node bin/doctor.js     --fixture fixtures/sheet.legacy.json
 echo '{"labelOnly":["fixture0000000005"]}' | node bin/commit.js --fixture fixtures/messages.sample.json --pretty
 ```
 
-A fixture run of `commit.js` is always a dry run - it has nothing to write
-with - and says so with `"dryRun": true`.
-
-The test suite is the same mechanism, run over the same fixtures:
+A fixture run of `commit.js` is always a dry run — it has nothing to write with
+— and says so with `"dryRun": true`. The test suite is the same mechanism over
+the same fixtures:
 
 ```bash
 npm test
 ```
 
-## Privacy
-
-Nothing in this repository is real. The fixtures are invented companies and
-`example.com` senders, there is no spreadsheet ID anywhere, and no message from
-an actual mailbox is checked in.
-
-The two secret files live in `~/.config/job-application-logger/`, outside the
-working tree. `.gitignore` additionally refuses `.env`, `.env.*` (except
-`.env.example`), `credentials.json`, `token.json`, `client_secret*.json` and
-`*.local.json` — a second line of defence, not the first one.
-
-`npm test` re-checks two of those properties on every run: that no file in the
-working tree carries an email address outside `example.com` / `example.org`
-(one exception, an ATS vendor's public `no-reply@greenhouse.io`, is
-allowlisted in the test), that none carries an absolute path into a home
-directory, and that `.gitignore` still contains each pattern above. It cannot
-prove the absence of every kind of secret; it checks the shapes that leaked
-before.
-
 ## What is tested, and what is not
 
 `npm test` is 89 tests over fixtures. **They cover no network call**, because
-this repository was built and reviewed without live Google credentials. That
-line matters more than any other in this file, so it is worth being exact
-about which side of it each behavior falls on.
+this repository was built and reviewed without live Google credentials.
 
-**Covered by the test suite** (`node:test`, fixtures only, no credentials):
+**Covered** (`node:test`, fixtures only, no credentials):
 
-- MIME body extraction: base64url decoding, multipart preference for
-  `text/plain`, HTML fallback and entity decoding, nested parts, attachments
-  skipped, truncation at `MAX_BODY_CHARS`.
-- Query construction, including the `-label:` term the deduplication depends
-  on, and `--since` duration validation.
+- MIME body extraction — base64url, multipart preference for `text/plain`, HTML
+  fallback and entity decoding, nested parts, attachments skipped, truncation.
+- Query construction, including the `-label:` term deduplication depends on, and
+  `--since` duration validation.
 - Header-row detection, column mapping, 1-indexed row numbers, and the exact
-  JSON emitted by `fetch.js`, `read-sheet.js` and `commit.js` in `--fixture`
-  mode, including exit codes.
+  JSON and exit codes of all three commands in `--fixture` mode.
 - Commit payload validation: the closed status set, the refusal of `?`, the
   refusal to write columns A–E on an update, unknown fields, bad rows.
 - The write-then-label ordering and its partial-failure reporting, against an
-  injected fake API: what gets labeled when an append fails, when an update
-  fails, and when the label call itself fails.
-- The migration *plan*: what `--migrate` would write, that it is a no-op the
-  second time, and that it refuses a column already in use.
-- Config resolution: defaults, `~` expansion, validation errors, and that the
-  token file is written mode `0600`.
+  injected fake API.
+- The migration *plan*: what `--migrate` would write, that a second run is a
+  no-op, and that it refuses a column already in use.
+- Config resolution: defaults, `~` expansion, validation errors, mode `0600`.
 
 **Not covered — code-reviewed only, never executed against Google:**
 
-- The entire OAuth flow: consent, the loopback redirect, the code exchange,
-  token refresh, and the stale-token (`invalid_grant`) recovery path.
-- Every Gmail API call: search, message fetch, label creation, `batchModify`.
-- Every Sheets API call: reading values, appending rows, the cell
-  `batchUpdate`.
-- The actual write performed by `doctor --migrate`. Its plan is tested; the
-  request that applies the plan is not.
-- `explainApiError`: the mapping from a real Google error to a readable
-  message is pattern-matching against error strings nobody has yet seen come
-  back from Google.
+- The entire OAuth flow: consent, loopback redirect, code exchange, token
+  refresh, and the stale-token (`invalid_grant`) recovery path.
+- Every Gmail call (search, fetch, label creation, `batchModify`) and every
+  Sheets call (read, append, `batchUpdate`).
+- The write performed by `doctor --migrate`. Its plan is tested; the request
+  that applies the plan is not.
+- `explainApiError` — pattern-matching against Google error strings nobody has
+  seen come back yet.
 - End-to-end idempotency. That a labeled message stays out of tomorrow's sweep
-  follows from the query, which is tested — but the loop has never been run
-  against a live mailbox.
+  follows from the query, which is tested, but the loop has never run against a
+  live mailbox.
 
 So: expect the offline behavior to hold, and treat the first live run as the
 first live run. Use `--dry-run`, read the `plan`, and start with a small
 `--since` window.
+
+## Scopes and secrets
+
+You grant exactly two scopes:
+
+| Scope | What it permits |
+|---|---|
+| `gmail.modify` | Read any message in your mailbox, including full bodies, and add or remove labels. It can move mail to Trash; it **cannot** permanently delete it. |
+| `spreadsheets` | Read and write **any** spreadsheet in your Drive, not only the one you configure. Google offers no narrower per-file scope for the Sheets API. |
+
+Read access is broader than "the emails this tool cares about" because Gmail has
+no scope for "only messages matching this query". `gmail.modify` is the
+narrowest scope that can both read a body and apply a label, and the label is
+what makes repeat runs idempotent. Both are the usual
+`https://www.googleapis.com/auth/…` forms, requested in `src/auth.js`.
+
+Everything runs locally, as you; nothing is sent anywhere except to Google's
+APIs. The OAuth client and refresh token live in
+`~/.config/job-application-logger/`, **outside this repository**, so no
+credential sits where `git add -A` can reach it; the token file is written mode
+`0600`. Revoke access any time at
+[myaccount.google.com/permissions](https://myaccount.google.com/permissions).
+
+Nothing in this repository is real: the fixtures are invented companies and
+`example.com` senders, there is no spreadsheet ID anywhere, and no message from
+an actual mailbox is checked in. `.gitignore` refuses `.env`, `.env.*` (except
+`.env.example`), `credentials.json`, `token.json`, `client_secret*.json` and
+`*.local.json`. `npm test` re-checks those patterns on every run, along with two
+shapes that leaked before: an email address outside `example.com` /
+`example.org`, and an absolute path into a home directory.
 
 ## Layout
 
