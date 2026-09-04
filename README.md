@@ -349,7 +349,6 @@ src/schema.js       commit payload validation
 src/fixture.js      offline input for --fixture
 fixtures/           invented messages and sheet states
 test/               node:test, no framework
-HANDOFF.md          the original implementation brief, kept for provenance
 ```
 
 ## License

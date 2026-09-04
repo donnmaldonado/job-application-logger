@@ -209,9 +209,6 @@ function repoFiles(dir = root, out = []) {
 
 test('the repository carries no real email addresses or secrets', () => {
   const addressPattern = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
-  // The one exception: HANDOFF.md's example contract quotes an ATS vendor's
-  // public no-reply address. It belongs to no person and identifies no user.
-  const allowed = new Set(['no-reply@greenhouse.io']);
 
   for (const file of repoFiles()) {
     const name = file.slice(root.length);
@@ -221,7 +218,7 @@ test('the repository carries no real email addresses or secrets', () => {
     const text = fs.readFileSync(file, 'utf8');
     for (const address of text.match(addressPattern) ?? []) {
       assert.ok(
-        address.endsWith('example.com') || address.endsWith('example.org') || allowed.has(address),
+        address.endsWith('example.com') || address.endsWith('example.org'),
         `${name} contains a non-example address: ${address}`
       );
     }
