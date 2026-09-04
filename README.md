@@ -1,5 +1,18 @@
 # job-application-logger
 
+Keeping track of a job search means keeping a spreadsheet: where you applied,
+what came back, what is still open. Maintaining one by hand is its own small
+job — every application typed twice, once into the employer's form and again
+into your own sheet, then every rejection and interview invite typed in on top
+of that. It is tedious enough that it stops getting done, and a tracker you
+stopped updating tells you nothing.
+
+The mail already contains all of it — the confirmations, the rejections, the
+interview invites. This tool keeps the spreadsheet and drops the typing. It is
+a batch job you run when you are done applying for the day, not a service
+watching your inbox, and what it produces is an ordinary Google Sheet you can
+open, sort and read to see the whole pipeline at a glance.
+
 One command a day: pull the job-application email that arrived since yesterday,
 judge it, print a table, and — only after you approve — write it into your
 tracking spreadsheet and label the mail so it never comes back.
