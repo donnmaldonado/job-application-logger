@@ -152,7 +152,7 @@ test('updates address the Status and Last Heard cells only', () => {
   ]);
   assert.ok(
     plan.updateCells.every((c) => /![FG]\d+$/.test(c.range)),
-    'no update may touch columns A-E'
+    'no update may touch the apply columns'
   );
 });
 

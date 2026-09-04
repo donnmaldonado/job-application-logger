@@ -42,14 +42,14 @@ test('non-objects are rejected', () => {
   }
 });
 
-test('updates may never write columns A-E', () => {
+test('updates may only write status and lastHeard', () => {
   for (const key of ['updated', 'role', 'company', 'link', 'notes']) {
     const { valid, errors } = validateCommitPayload({
       updates: [{ row: 5, status: 'rejected', [key]: 'x' }],
     });
     assert.equal(valid, false, key);
     assert.match(errors[0], new RegExp(`may not set "${key}"`));
-    assert.match(errors[0], /never write columns A-E/);
+    assert.match(errors[0], /only ever write status and lastHeard/);
   }
 });
 

@@ -133,7 +133,7 @@ test('commit rejects an invalid payload with exit code 2 and no writes', () => {
   );
   assert.equal(status, 2);
   assert.equal(json.appended, 0);
-  assert.match(json.errors[0], /never write columns A-E/);
+  assert.match(json.errors[0], /only ever write status and lastHeard/);
 });
 
 test('commit rejects malformed JSON with exit code 2', () => {

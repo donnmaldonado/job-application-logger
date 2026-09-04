@@ -328,7 +328,7 @@ export async function appendRows(sheets, spreadsheetId, tabName, rows) {
   return res.data.updates?.updatedRows ?? rows.length;
 }
 
-/** Write individual cells. Never touches columns A-E; callers build ranges. */
+/** Write individual cells. Only ever the status and lastHeard cells; callers build ranges. */
 export async function writeCells(sheets, spreadsheetId, data) {
   if (data.length === 0) return 0;
   const res = await sheets.spreadsheets.values.batchUpdate({

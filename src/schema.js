@@ -148,7 +148,7 @@ export function validateCommitPayload(input) {
           if (UPDATE_KEYS.has(key)) continue;
           if (PROTECTED_KEYS.includes(key)) {
             errors.push(
-              `${path} may not set "${key}": updates never write columns A-E, so a status change cannot overwrite the apply date or a hand-written note`
+              `${path} may not set "${key}": updates only ever write status and lastHeard, so a status change cannot overwrite the apply date or a hand-written note`
             );
           } else {
             errors.push(`${path} has unknown field "${key}"`);

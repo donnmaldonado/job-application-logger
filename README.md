@@ -181,16 +181,20 @@ Every command also takes `--help` and `--fixture <path>`
 | A | `Updated` | Date applied, `M/D` |
 | B | `Role` | |
 | C | `Company` | |
-| D | *(unlabeled)* | Link |
-| E | *(unlabeled)* | Notes |
-| F | `Status` | `applied` / `confirmed` / `rejected` / `interview` |
-| G | `Last Heard` | `M/D` of the most recent email about this application |
-| H | `Source` | `manual` / `auto` |
+| D | `Status` | `applied` / `confirmed` / `rejected` / `interview` |
+| E | `Last Heard` | `M/D` of the most recent email about this application |
+| F | `Source` | `manual` / `auto` |
 
 The header row is **not** assumed to be row 1. The tools scan the first ten rows
 for one containing `Updated`, `Role` and `Company`; data starts on the row after
 it. The letters above are the usual result, not an assumption — every column is
-addressed by where its header actually is.
+addressed by where its header actually is, so inserting or deleting a column
+moves the tools with it.
+
+Columns of your own are fine. If the two columns immediately right of `Company`
+are unlabeled, the tools treat them as `Link` and `Notes`: read past, never
+written, and `Status` / `Last Heard` / `Source` sit to the right of them
+instead. Anything further out is invisible to the tools.
 
 Updates only ever touch the `Status` and `Last Heard` cells of a row. A payload
 that tries to set `updated`, `role`, `company`, `link` or `notes` on an update
@@ -267,7 +271,8 @@ network paths are covered by having actually been run, not by the suite.
 - Header-row detection, column mapping, 1-indexed row numbers, and the exact
   JSON and exit codes of all three commands in `--fixture` mode.
 - Commit payload validation: the closed status set, the refusal of `?`, the
-  refusal to write columns A–E on an update, unknown fields, bad rows.
+  refusal to write anything but `status` and `lastHeard` on an update,
+  unknown fields, bad rows.
 - The write-then-label ordering and its partial-failure reporting, against an
   injected fake API.
 - The migration *plan*: what `--migrate` would write, that a second run is a
