@@ -1,11 +1,5 @@
 #!/usr/bin/env node
-/**
- * read-sheet.js - Google Sheet -> JSON on stdout.
- *
- * Emits 1-indexed sheet row numbers so commit.js can address rows directly.
- * That row number is the reason this cannot be replaced by a generic Drive
- * reader: a status update needs to know which physical row to touch.
- */
+/** read-sheet.js - Google Sheet -> JSON on stdout, with 1-indexed row numbers for commit.js. */
 import { parseArgs } from 'node:util';
 import { loadConfig, die } from '../src/config.js';
 import { getAuthClient, sheetsClient, explainApiError } from '../src/auth.js';

@@ -1,11 +1,5 @@
 #!/usr/bin/env node
-/**
- * fetch.js - Gmail search -> JSON on stdout.
- *
- * Pulls candidate messages from the lookback window, minus anything already
- * carrying the processed label, and emits them in the shape the skill reads.
- * No judgment happens here; this is a pipe.
- */
+/** fetch.js - Gmail search -> JSON on stdout. No judgment here; this is a pipe. */
 import { parseArgs } from 'node:util';
 import { loadConfig, die, UserError } from '../src/config.js';
 import { getAuthClient, gmailClient, explainApiError } from '../src/auth.js';

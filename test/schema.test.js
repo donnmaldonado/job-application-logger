@@ -1,7 +1,3 @@
-/**
- * commit.js is the only thing here that writes, so the payload gate gets
- * tested hard: a bad extraction must be refused, not repaired.
- */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateCommitPayload, collectMessageIds } from '../src/schema.js';

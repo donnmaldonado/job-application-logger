@@ -20,12 +20,7 @@ export class UserError extends Error {
   }
 }
 
-/**
- * Where the two secret files live by default: outside the repository, in the
- * user's config directory. Keeping them out of the working tree means a
- * mistaken `git add -A` cannot commit a credential, and .gitignore is only a
- * second line of defence rather than the only one.
- */
+/** Default home of the two secret files, outside the repository. */
 export const CONFIG_DIR = '~/.config/job-application-logger';
 
 const DEFAULTS = {
@@ -40,10 +35,7 @@ const DEFAULTS = {
   TIMEZONE: 'America/New_York',
 };
 
-/**
- * Load `.env` if it exists and the process was not already started with
- * --env-file. Safe to call more than once.
- */
+/** Load `.env` from `cwd` if it exists. Safe to call more than once. */
 export function loadEnvFile(cwd = process.cwd()) {
   const envPath = path.join(cwd, '.env');
   if (!fs.existsSync(envPath)) return false;
@@ -51,8 +43,7 @@ export function loadEnvFile(cwd = process.cwd()) {
     process.loadEnvFile(envPath);
     return true;
   } catch {
-    // Already loaded by --env-file, or unreadable. Validation below reports
-    // anything that actually matters.
+    // Unreadable. Validation below reports anything that actually matters.
     return false;
   }
 }

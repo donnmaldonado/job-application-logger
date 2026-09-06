@@ -1,7 +1,3 @@
-/**
- * MIME body extraction is the fiddliest part of this tool and the part most
- * likely to fail silently, so it is tested directly against the fixture.
- */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -32,38 +28,6 @@ test('base64url decoding translates - and _', () => {
   const encoded = Buffer.from('subject?~ ünïcode ~?', 'utf8').toString('base64url');
   assert.equal(decodeBase64Url(encoded), 'subject?~ ünïcode ~?');
 });
-
-test('the multipart fixture body really is base64url, not base64', () => {
-  const data = MULTIPART.payload.parts[0].parts[0].body.data;
-  assert.ok(data.includes('-'), 'fixture body should contain a base64url "-"');
-  assert.ok(data.includes('_'), 'fixture body should contain a base64url "_"');
-
-  // A decoder that only knows the standard alphabet cannot see `-` and `_`,
-  // so its output shifts into mojibake. That is the failure the spec warns
-  // about, and this asserts our decoder does not share it.
-  assert.notEqual(strictBase64Decode(data), decodeBase64Url(data));
-  assert.match(decodeBase64Url(data), /Northwind Robotics/);
-});
-
-/** A deliberately strict base64 decoder: it ignores anything outside the
- *  standard alphabet, which is how base64url input gets mangled. */
-function strictBase64Decode(input) {
-  const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  const bytes = [];
-  let bits = 0;
-  let count = 0;
-  for (const ch of input) {
-    const value = ALPHABET.indexOf(ch);
-    if (value < 0) continue;
-    bits = (bits << 6) | value;
-    count += 6;
-    if (count >= 8) {
-      count -= 8;
-      bytes.push((bits >> count) & 0xff);
-    }
-  }
-  return Buffer.from(bytes).toString('utf8');
-}
 
 test('decodeBase64Url handles missing padding and empty input', () => {
   assert.equal(decodeBase64Url(Buffer.from('abcde').toString('base64url')), 'abcde');

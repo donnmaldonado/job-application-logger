@@ -1,12 +1,5 @@
 #!/usr/bin/env node
-/**
- * doctor.js - check the setup, one step at a time, and say what to do about
- * whatever is missing. Also lists the spreadsheet's tabs, reports the detected
- * header row, and (with --migrate) adds the three new columns.
- *
- * Every failure here is a human-readable instruction, never a stack trace:
- * this is the command a stranger runs first.
- */
+/** doctor.js - check config, auth and sheet shape step by step; list tabs; --migrate adds the tracking columns. */
 import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
@@ -76,7 +69,7 @@ async function main() {
   const major = Number(process.versions.node.split('.')[0]);
   if (major < MIN_NODE_MAJOR) {
     throw new UserError(`Node ${process.versions.node} is too old; this tool needs Node ${MIN_NODE_MAJOR}+.`, {
-      hint: 'Node 22 is what supplies --env-file, parseArgs, and fetch, which is why there are no dependencies beyond googleapis.',
+      hint: 'Node 22 is what supplies process.loadEnvFile, parseArgs, and fetch, which is why there are no dependencies beyond googleapis.',
     });
   }
   ok(`node ${process.versions.node}`);
@@ -160,18 +153,7 @@ async function main() {
   if (flags.migrate) {
     await runMigration({ values, tabName: config.tabName, sheets, spreadsheetId: config.sheetId });
   } else {
-    const plan = planMigration(values, config.tabName);
-    if (plan.conflicts.length > 0) {
-      warn('migration would refuse to run:');
-      for (const c of plan.conflicts) info(`  ${c}`);
-    } else if (plan.needed) {
-      warn(
-        `migration pending: ${plan.headerWrites.length} header(s) and ${plan.cellWrites.length} backfill cell(s).`
-      );
-      info('run `npm run doctor -- --migrate` to apply it.');
-    } else {
-      ok('migration already applied (Status / Last Heard / Source present)');
-    }
+    reportPlan(planMigration(values, config.tabName));
   }
 
   process.stdout.write('\nAll checks passed.\n');
@@ -184,8 +166,17 @@ async function fixtureChecks(flags, config) {
   info(`tabs: ${sheet.tabs.join(', ')}`);
   reportShape(sheet.values, sheet.tab);
 
-  const plan = planMigration(sheet.values, sheet.tab);
   step('Migration');
+  reportPlan(planMigration(sheet.values, sheet.tab));
+  if (flags.migrate) {
+    step('Migration (fixture)');
+    warn('fixture mode writes nothing. The plan above is what --migrate would do live.');
+  }
+  process.stdout.write('\nFixture checks passed.\n');
+}
+
+/** Say what --migrate would do, without doing it. */
+function reportPlan(plan) {
   if (plan.conflicts.length > 0) {
     warn('migration would refuse to run:');
     for (const c of plan.conflicts) info(`  ${c}`);
@@ -194,14 +185,10 @@ async function fixtureChecks(flags, config) {
     for (const w of plan.headerWrites) info(`  ${w.range} = ${w.value}`);
     for (const w of plan.cellWrites.slice(0, 10)) info(`  ${w.range} = ${w.value}`);
     if (plan.cellWrites.length > 10) info(`  ... and ${plan.cellWrites.length - 10} more`);
+    info('run `npm run doctor -- --migrate` to apply it.');
   } else {
-    ok('migration already applied');
+    ok('migration already applied (Status / Last Heard / Source present)');
   }
-  if (flags.migrate) {
-    step('Migration (fixture)');
-    warn('fixture mode writes nothing. The plan above is what --migrate would do live.');
-  }
-  process.stdout.write('\nFixture checks passed.\n');
 }
 
 function reportShape(values, tabName) {

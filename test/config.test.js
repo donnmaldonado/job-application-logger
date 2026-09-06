@@ -1,10 +1,3 @@
-/**
- * Config resolution and the on-disk handling of the token file.
- *
- * These are the only credential-adjacent behaviors that can be checked without
- * a Google account: where the two secret files are looked for, and the mode of
- * the token once written. The OAuth exchange itself is not exercised anywhere.
- */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

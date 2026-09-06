@@ -31,7 +31,6 @@ export function readCredentials(credentialsPath) {
         '  4. Credentials -> Create credentials -> OAuth client ID -> Desktop app\n' +
         `  5. Download the JSON and save it as ${credentialsPath}\n` +
         `     (create the directory first: mkdir -p ${path.dirname(credentialsPath)})\n` +
-        'Keep it outside the repository so it can never be committed.\n' +
         'The README walks through this in full.',
     });
   }
@@ -66,8 +65,7 @@ function readToken(tokenPath) {
 }
 
 export function writeToken(tokenPath, tokens) {
-  // The token lives outside the repository by default, so its directory may
-  // not exist yet on a first run.
+  // The directory may not exist yet on a first run.
   fs.mkdirSync(path.dirname(tokenPath), { recursive: true, mode: 0o700 });
   fs.writeFileSync(tokenPath, JSON.stringify(tokens, null, 2), { mode: 0o600 });
   try {
@@ -110,8 +108,12 @@ async function runConsentFlow({ clientId, clientSecret }) {
   );
   openBrowser(authUrl);
 
-  const code = await waitForCode(server);
-  server.close();
+  let code;
+  try {
+    code = await waitForCode(server);
+  } finally {
+    server.close();
+  }
 
   try {
     const { tokens } = await client.getToken(code);
@@ -125,10 +127,21 @@ async function runConsentFlow({ clientId, clientSecret }) {
 
 function listenOnFreePort() {
   return new Promise((resolve, reject) => {
-    const pending = [];
-    const server = http.createServer((req, res) => {
-      const handler = pending[0];
-      const url = new URL(req.url, `http://localhost`);
+    const server = http.createServer();
+    server.on('error', reject);
+    server.listen(0, '127.0.0.1', () => resolve({ server, port: server.address().port }));
+  });
+}
+
+/** Settle with the code from the first redirect that carries one, or reject on denial or timeout. */
+function waitForCode(server) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new UserError('Timed out waiting for the browser to complete authorization.'));
+    }, CONSENT_TIMEOUT_MS);
+
+    server.on('request', (req, res) => {
+      const url = new URL(req.url, 'http://localhost');
       const code = url.searchParams.get('code');
       const error = url.searchParams.get('error');
 
@@ -146,34 +159,9 @@ function listenOnFreePort() {
           : '<!doctype html><meta charset="utf-8"><p>Authorization failed. Return to the terminal.</p>'
       );
 
-      if (handler) {
-        pending.shift();
-        if (code) handler.resolve(code);
-        else handler.reject(new UserError(`Authorization was denied or cancelled${error ? `: ${error}` : '.'}`));
-      }
-    });
-    server.pending = pending;
-    server.on('error', reject);
-    server.listen(0, '127.0.0.1', () => resolve({ server, port: server.address().port }));
-  });
-}
-
-function waitForCode(server) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      server.close();
-      reject(new UserError('Timed out waiting for the browser to complete authorization.'));
-    }, CONSENT_TIMEOUT_MS);
-
-    server.pending.push({
-      resolve: (code) => {
-        clearTimeout(timer);
-        resolve(code);
-      },
-      reject: (err) => {
-        clearTimeout(timer);
-        reject(err);
-      },
+      clearTimeout(timer);
+      if (code) resolve(code);
+      else reject(new UserError(`Authorization was denied or cancelled${error ? `: ${error}` : '.'}`));
     });
   });
 }
