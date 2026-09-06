@@ -1,11 +1,4 @@
-/**
- * Gmail: query construction, search, message normalization, MIME body
- * extraction, and labeling.
- *
- * The pure functions here (decodeBase64Url, stripHtml, extractBody,
- * normalizeMessage, buildQuery) take plain data and are exercised directly by
- * the tests against fixtures - no network, no credentials.
- */
+/** Gmail: query construction, search, message normalization, MIME body extraction, and labeling. */
 import { UserError } from './config.js';
 
 /** Decode a base64url payload (Gmail uses `-` and `_`, not `+` and `/`). */

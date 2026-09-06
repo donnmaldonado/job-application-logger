@@ -1,8 +1,3 @@
-/**
- * Header detection, column mapping, and the migration plan. The header row is
- * not guaranteed to be row 1, and the migration must never touch data that is
- * already there, so both get tested against ragged, realistic values.
- */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -16,7 +11,6 @@ import {
   publicSheetPayload,
   planMigration,
   buildAppendRow,
-  formatSheetDate,
 } from '../src/sheets.js';
 
 const migrated = JSON.parse(fs.readFileSync(new URL('../fixtures/messages.sample.json', import.meta.url))).sheet;
@@ -205,10 +199,4 @@ test('append rows ignore a caller-supplied source: it is always auto', () => {
   const indices = buildSheetPayload(migrated.values, 'Applications').indices;
   const row = buildAppendRow({ updated: '9/3', role: 'r', company: 'c', status: 'applied', source: 'manual' }, indices);
   assert.equal(row[7], 'auto');
-});
-
-test('sheet dates are M/D in the configured timezone', () => {
-  const instant = new Date('2026-09-03T02:30:00.000Z'); // 22:30 on 9/2 in New York
-  assert.equal(formatSheetDate(instant, 'America/New_York'), '9/2');
-  assert.equal(formatSheetDate(instant, 'UTC'), '9/3');
 });

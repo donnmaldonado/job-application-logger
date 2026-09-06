@@ -9,10 +9,10 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "doctor": "node --env-file-if-exists=.env bin/doctor.js",
-    "fetch": "node --env-file-if-exists=.env bin/fetch.js",
-    "sheet": "node --env-file-if-exists=.env bin/read-sheet.js",
-    "commit": "node --env-file-if-exists=.env bin/commit.js",
+    "doctor": "node bin/doctor.js",
+    "fetch": "node bin/fetch.js",
+    "sheet": "node bin/read-sheet.js",
+    "commit": "node bin/commit.js",
     "test": "node --test"
   },
   "dependencies": {

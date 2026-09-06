@@ -1,15 +1,8 @@
-/**
- * Sheets: header detection, column mapping, reading, appending, updating, and
- * the additive migration that adds Status / Last Heard / Source.
- *
- * The pure functions (detectHeaderRow, buildColumns, buildSheetPayload,
- * planMigration, buildAppendRow) operate on a plain 2D array of cell strings,
- * which is exactly what a fixture provides.
- */
+/** Sheets: header detection, column mapping, read, append, update, and the additive migration. */
 import { UserError } from './config.js';
 
 /** Canonical column keys, in sheet order. */
-export const COLUMN_KEYS = [
+const COLUMN_KEYS = [
   'updated',
   'role',
   'company',
@@ -21,7 +14,7 @@ export const COLUMN_KEYS = [
 ];
 
 /** Keys a row object reports (link and notes are left to the human). */
-export const ROW_KEYS = ['updated', 'role', 'company', 'status', 'lastHeard', 'source'];
+const ROW_KEYS = ['updated', 'role', 'company', 'status', 'lastHeard', 'source'];
 
 /** Columns commit.js must never write on an update. */
 export const PROTECTED_KEYS = ['updated', 'role', 'company', 'link', 'notes'];
@@ -68,7 +61,7 @@ function norm(cell) {
   return String(cell ?? '').trim().toLowerCase();
 }
 
-export function cell(values, rowIdx, colIdx) {
+function cell(values, rowIdx, colIdx) {
   const row = values?.[rowIdx];
   if (!Array.isArray(row)) return '';
   const v = row[colIdx];
@@ -178,16 +171,6 @@ export function buildSheetPayload(values, tabName) {
 export function publicSheetPayload(payload) {
   const { indices, ...rest } = payload;
   return rest;
-}
-
-/** M/D in the configured timezone, matching the sheet's existing date text. */
-export function formatSheetDate(date = new Date(), timezone = 'America/New_York') {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone,
-    month: 'numeric',
-    day: 'numeric',
-  }).format(date);
-  return parts;
 }
 
 /**

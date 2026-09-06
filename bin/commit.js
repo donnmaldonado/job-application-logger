@@ -1,15 +1,5 @@
 #!/usr/bin/env node
-/**
- * commit.js - JSON payload on stdin -> sheet write, then Gmail label.
- *
- * This command owns both halves on purpose. The system's core invariant is
- * that a message carries the processed label if and only if its content
- * reached the sheet. Split across two commands, they drift: a write without a
- * label duplicates the row tomorrow, and a label without a write loses the
- * application silently and forever. Keeping both here fixes the ordering -
- * write first, label second, report partial failure loudly - where the caller
- * cannot get it wrong.
- */
+/** commit.js - JSON payload on stdin -> sheet write, then Gmail label. */
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';

@@ -1,8 +1,3 @@
-/**
- * End-to-end runs of the four commands in --fixture mode: the JSON contracts
- * the skill depends on, the exit codes, and the promise that --dry-run
- * touches nothing.
- */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

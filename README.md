@@ -8,14 +8,13 @@ of that. It is tedious enough that it stops getting done, and a tracker you
 stopped updating tells you nothing.
 
 The mail already contains all of it — the confirmations, the rejections, the
-interview invites. This tool keeps the spreadsheet and drops the typing. It is
-a batch job you run when you are done applying for the day, not a service
-watching your inbox, and what it produces is an ordinary Google Sheet you can
-open, sort and read to see the whole pipeline at a glance.
-
-One command a day: pull the job-application email that arrived since yesterday,
-judge it, print a table, and — only after you approve — write it into your
-tracking spreadsheet and label the mail so it never comes back.
+interview invites. This tool keeps the spreadsheet from the mail and drops the
+typing. One command, run when you are done applying for the day: pull the
+job-application email that arrived since yesterday, judge it, print a table,
+and — only after you approve — write it into your tracking spreadsheet and
+label the mail so it never comes back. Not a service watching your inbox, and
+what it produces is an ordinary Google Sheet you can open, sort and read to see
+the whole pipeline at a glance.
 
 1. `bin/read-sheet.js` reads the applications already in the sheet.
 2. `bin/fetch.js` pulls the Gmail from the last N days that hasn't been logged yet.
@@ -29,19 +28,6 @@ tracking spreadsheet and label the mail so it never comes back.
   in the terminal. No cron, no triggers, no webhooks; you run it.
 - **Email is a floor, not the whole truth.** Plenty of employers never send a
   confirmation, and those applications will never appear.
-- **Run against one real account.** The daily loop — OAuth, Gmail search and
-  labeling, sheet read, append and update — works end to end on the author's
-  mailbox and spreadsheet. A few paths still have not run; see
-  [What is tested, and what is not](#what-is-tested-and-what-is-not).
-
-## Prerequisites
-
-- **Node 22 or newer** (`node --version`) — the tool uses `--env-file`,
-  `parseArgs` and `process.loadEnvFile`.
-- **A Google Cloud project** with the Gmail and Sheets APIs enabled and a
-  Desktop OAuth client ([step 2](#2-create-a-google-cloud-project)).
-- **A tracking spreadsheet** whose header row contains `Updated`, `Role` and
-  `Company`.
 
 ## Quick start
 
@@ -109,7 +95,7 @@ Everything else has a default:
 | `TIMEZONE` | `America/New_York` | IANA zone used to format `M/D` dates. |
 
 Both path variables expand a leading `~`; a relative path resolves against the
-directory you run from. Keep them pointing outside the repo.
+directory you run from.
 
 ### 4. Authenticate and check the sheet
 
@@ -272,25 +258,14 @@ npm test
 
 ## What is tested, and what is not
 
-`npm test` is 89 tests over fixtures. **They cover no network call** — the
+`npm test` is 87 tests over fixtures. **They cover no network call** — the
 network paths are covered by having actually been run, not by the suite.
 
-**Covered** (`node:test`, fixtures only, no credentials):
-
-- MIME body extraction — base64url, multipart preference for `text/plain`, HTML
-  fallback and entity decoding, nested parts, attachments skipped, truncation.
-- Query construction, including the `-label:` term deduplication depends on, and
-  `--since` duration validation.
-- Header-row detection, column mapping, 1-indexed row numbers, and the exact
-  JSON and exit codes of all three commands in `--fixture` mode.
-- Commit payload validation: the closed status set, the refusal of `?`, the
-  refusal to write anything but `status` and `lastHeard` on an update,
-  unknown fields, bad rows.
-- The write-then-label ordering and its partial-failure reporting, against an
-  injected fake API.
-- The migration *plan*: what `--migrate` would write, that a second run is a
-  no-op, and that it refuses a column already in use.
-- Config resolution: defaults, `~` expansion, validation errors, mode `0600`.
+**Covered** (`node:test`, fixtures only, no credentials): MIME body extraction,
+query construction, header-row detection and column mapping, commit payload
+validation, the write-then-label ordering and its partial-failure reporting
+against an injected fake API, the migration plan, config resolution, and the
+exact JSON and exit codes of every command in `--fixture` mode.
 
 **Exercised against Google, but not by the suite** (one account, real
 mailbox and spreadsheet, across several days of ordinary use):
@@ -333,18 +308,15 @@ what makes repeat runs idempotent. Both are the usual
 
 Everything runs locally, as you; nothing is sent anywhere except to Google's
 APIs. The OAuth client and refresh token live in
-`~/.config/job-application-logger/`, **outside this repository**, so no
-credential sits where `git add -A` can reach it; the token file is written mode
-`0600`. Revoke access any time at
+`~/.config/job-application-logger/`, outside this repository, and the token
+file is written mode `0600`. Revoke access any time at
 [myaccount.google.com/permissions](https://myaccount.google.com/permissions).
 
 Nothing in this repository is real: the fixtures are invented companies and
-`example.com` senders, there is no spreadsheet ID anywhere, and no message from
-an actual mailbox is checked in. `.gitignore` refuses `.env`, `.env.*` (except
-`.env.example`), `credentials.json`, `token.json`, `client_secret*.json` and
-`*.local.json`. `npm test` re-checks those patterns on every run, along with two
-shapes that leaked before: an email address outside `example.com` /
-`example.org`, and an absolute path into a home directory.
+`example.com` senders, and no spreadsheet ID or message from an actual mailbox
+is checked in. `npm test` checks the `.gitignore` patterns for secret files on
+every run, and fails on any real-looking email address or home-directory path
+anywhere in the tree.
 
 ## Layout
 

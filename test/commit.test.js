@@ -1,9 +1,3 @@
-/**
- * The core invariant: a message carries the processed label if and only if
- * its content reached the sheet. commit.js owns both halves for that reason,
- * so the ordering and the partial-failure reporting are tested here with an
- * injected io - no credentials, no network.
- */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
