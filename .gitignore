@@ -11,3 +11,6 @@ client_secret*.json
 *.local.json
 
 .DS_Store
+
+# Editor swap files
+*.swp
