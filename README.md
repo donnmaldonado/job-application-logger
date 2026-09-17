@@ -1,11 +1,11 @@
 # job-application-logger
 
-Keeping track of a job search means keeping a spreadsheet: where you applied,
-what came back, what is still open. Maintaining one by hand is its own small
-job — every application typed twice, once into the employer's form and again
-into your own sheet, then every rejection and interview invite typed in on top
-of that. It is tedious enough that it stops getting done, and a tracker you
-stopped updating tells you nothing.
+I am looking for a new role, and I track the search in a Google Sheet: where I
+applied, what came back, what is still open. Maintaining it by hand is its own
+small job — every application typed twice, once into the employer's form and
+again into my own sheet, then every rejection and interview invite typed in on
+top of that. It is tedious enough that it stops getting done, and a tracker you
+stopped updating tells you nothing. That is why this exists.
 
 The mail already contains all of it — the confirmations, the rejections, the
 interview invites. This tool keeps the spreadsheet from the mail and drops the
@@ -22,8 +22,11 @@ the whole pipeline at a glance.
 4. You approve the table. `bin/commit.js` writes the rows, then labels the mail.
 
 - **Node 22+, ESM, no build step.** One dependency: `googleapis`.
-- **No LLM API calls in this repo.** The judging happens in the Claude Code
-  session that runs the skill — no API key here, no inference bill.
+- **It runs on the Claude subscription you already pay for.** The judging
+  happens inside the Claude Code session that runs the skill: no API key in this
+  repo, no metered inference, nothing extra on top of the subscription.
+  [What it costs](#what-it-costs) works out what the same work *would* bill at
+  API rates — it is small either way.
 - **Never autonomous.** Nothing reaches the spreadsheet without you approving it
   in the terminal. No cron, no triggers, no webhooks; you run it.
 - **Email is a floor, not the whole truth.** Plenty of employers never send a
@@ -172,6 +175,49 @@ Every command also takes `--help` and `--fixture <path>`
 - `--dry-run` prints the exact rows, cell ranges and message ids it would touch
   under a `plan` key, with `"dryRun": true`. It reads the sheet to resolve those
   ranges and writes nothing anywhere.
+
+## What it costs
+
+Nothing beyond the Claude subscription you already have. The judging happens
+inside the Claude Code session you are already sitting in: no API key, no
+metered inference, no second bill. Google's side is free at this volume by a
+wide margin.
+
+What follows is the counterfactual — what a run *would* bill at API rates —
+because it is the number that says the design is cheap rather than merely free.
+Measured from the real output shapes, at roughly four characters per token:
+
+| Input | Size | Tokens |
+|---|---|---|
+| One email from `fetch.js` | 854 bytes (mean over the fixtures) | ~215 |
+| One email with its body at the `MAX_BODY_CHARS` cap | 2,311 bytes | ~580 |
+| One sheet row from `read-sheet.js` | 132 bytes | ~33 |
+| `SKILL.md`, loaded once per run | 6,190 bytes | ~1,550 |
+
+A run is about four inference passes — dispatch the commands, classify and print
+the table, emit the payload, report — and each re-reads the context before it,
+so **one more email costs roughly 800 input and 110 output tokens**. With prompt
+caching, for a typical sweep of 10 emails against a 100-row sheet, and for a
+90-day search of ~445 emails on a sheet growing 20 → 200 rows:
+
+| Model | Per email | One sweep | Whole search |
+|---|---|---|---|
+| Haiku 4.5 | $0.004 | $0.04 | $3.15 |
+| Sonnet | $0.012 | $0.12 | $9.46 |
+| Opus | $0.059 | $0.59 | $47.31 |
+
+Most of a run is fixed — the skill, the tool definitions and the whole sheet are
+read whether you log one email or twenty — so the per-email figure falls as the
+sweep grows: one email against a 20-row sheet is ~$0.08 of Sonnet, while the
+twenty-fifth email in a run is ~$0.003. Batching a few days into one
+`/log-applications 5d` beats five daily runs. `MAX_BODY_CHARS` (default 2,000)
+caps the other end: a newsletter listing forty jobs costs about what a two-line
+rejection does.
+
+Rates are list prices at the time of writing (Haiku 4.5 $1/$5, Sonnet $3/$15,
+Opus $15/$75 per million in/out; cache reads 0.1×, writes 1.25×) — see
+[current pricing](https://www.anthropic.com/pricing). These are estimates from
+measured payload sizes and a four-pass model of a run, not figures off a bill.
 
 ## The sheet
 
