@@ -163,7 +163,14 @@ test('assertDuration rejects human durations', () => {
   assert.equal(assertDuration('2d'), '2d');
   assert.equal(assertDuration('12h'), '12h');
   assert.throws(() => assertDuration('2 days'), /Gmail duration syntax/);
+  assert.throws(() => assertDuration('1 week'), /Gmail duration syntax/);
   assert.throws(() => assertDuration(''), /Gmail duration syntax/);
+});
+
+test('assertDuration converts weeks to days, since newer_than has no week unit', () => {
+  assert.equal(assertDuration('1w'), '7d');
+  assert.equal(assertDuration('2w'), '14d');
+  assert.equal(assertDuration(' 3W '), '21d');
 });
 
 test('entity decoding leaves unknown entities alone', () => {

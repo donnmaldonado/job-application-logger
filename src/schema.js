@@ -4,9 +4,14 @@
  * commit.js is the only thing in this repo that writes, so this is the last
  * gate before a bad extraction becomes a bad row. It rejects rather than
  * repairs: a payload that is wrong is a bug in the caller, and a silently
- * "fixed" payload writes something the user never approved.
+ * "fixed" payload writes something the user never approved. The one default
+ * is a missing role: generic ATS mail often names only the company, and the
+ * user has chosen to log those rows as UNKNOWN_ROLE rather than be asked.
  */
 import { STATUS_VALUES, PROTECTED_KEYS } from './sheets.js';
+
+/** What an append's role becomes when the email never named one. */
+export const UNKNOWN_ROLE = '(unknown)';
 
 const APPEND_KEYS = new Set([
   'updated',
@@ -115,10 +120,9 @@ export function validateCommitPayload(input) {
         }
         appends.push({
           updated: checkText(raw.updated, `${path}.updated`, errors, { required: true }),
-          role: checkText(raw.role, `${path}.role`, errors, {
-            required: true,
-            allowQuestionMark: false,
-          }),
+          role:
+            checkText(raw.role, `${path}.role`, errors, { allowQuestionMark: false }) ||
+            UNKNOWN_ROLE,
           company: checkText(raw.company, `${path}.company`, errors, {
             required: true,
             allowQuestionMark: false,
