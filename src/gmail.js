@@ -200,15 +200,23 @@ function quoteLabel(label) {
 
 const DURATION = /^\d+[dmyhw]$/i;
 
-/** Gmail duration syntax check, so a typo fails here and not at the API. */
+/**
+ * Gmail duration syntax check, so a typo fails here and not at the API.
+ * Weeks are rewritten as days: `newer_than:` has no week unit, and `1w`
+ * silently matches nothing instead of failing.
+ */
 export function assertDuration(value, flagName = '--since') {
-  if (!DURATION.test(String(value ?? '').trim())) {
+  const trimmed = String(value ?? '').trim();
+  if (!DURATION.test(trimmed)) {
     throw new UserError(
       `${flagName} must use Gmail duration syntax like 2d, 12h, 3w, or 1m (got ${JSON.stringify(value)}).`,
-      { hint: 'd = days, h = hours, w = weeks, m = months, y = years. GMAIL_LOOKBACK in .env sets the default.' }
+      {
+        hint: 'd = days, h = hours, w = weeks (converted to days), m = months, y = years. GMAIL_LOOKBACK in .env sets the default.',
+      }
     );
   }
-  return String(value).trim();
+  if (/w$/i.test(trimmed)) return `${Number.parseInt(trimmed, 10) * 7}d`;
+  return trimmed;
 }
 
 // ---------------------------------------------------------------------------

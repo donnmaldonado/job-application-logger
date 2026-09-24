@@ -170,7 +170,9 @@ Every command also takes `--help` and `--fixture <path>`
 ([offline mode](#offline-mode)).
 
 - `--since` takes Gmail duration syntax (`2d`, `12h`, `3w`, `1m`, `1y`);
-  anything else is rejected before a request is made.
+  anything else is rejected before a request is made. Weeks are converted to
+  days (`3w` becomes `newer_than:21d`) because Gmail's `newer_than` has no
+  week unit and silently matches nothing for `w`.
 - `--max` and `--tab` override `MAX_MESSAGES` and `SHEET_TAB_NAME` for one run.
 - `--dry-run` prints the exact rows, cell ranges and message ids it would touch
   under a `plan` key, with `"dryRun": true`. It reads the sheet to resolve those

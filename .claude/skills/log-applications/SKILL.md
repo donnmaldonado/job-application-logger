@@ -53,9 +53,11 @@ Then extract **company** and **role**.
   body for the employer name.
 - The role is often absent from the subject and present only in the body.
   Workday confirmations are frequently generic about both company and role.
-- If you cannot determine the company or the role confidently, mark that field
-  `?` and ask the user. Never guess a company name into the sheet. `commit.js`
-  rejects a payload containing `?` on purpose.
+- If the email names the company but no role, the role is `(unknown)`. Do not
+  ask about it. Omitting `role` from the payload has the same effect.
+- If you cannot determine the company confidently, mark it `?` and ask the
+  user. Never guess a company name into the sheet. `commit.js` rejects a
+  payload containing `?` on purpose.
 
 ## 3. Cross-check against the sheet
 
@@ -68,7 +70,14 @@ application already in the sheet is the common case, not the edge case.
 - Existing row, new information -> update (`~`), addressed by its `row` number.
 - No matching row -> append (`+`).
 - Irrelevant -> ignore (`-`); it still gets labeled so it never comes back.
-- Ambiguous -> `?`; ask.
+- Ambiguous -> `?`; ask. A missing role is not ambiguity: a generic
+  confirmation for a company with no row is a plain append (`+`). Keep `?` for
+  real doubt, such as a role that might or might not match an existing row.
+
+An `(unknown)` row is still a row. A later rejection for that company is an
+update (`~`) of it, which changes only `status` and `lastHeard`, because role
+is a protected column. If that email names the role, say so in the table note
+so the user can fill in the cell by hand.
 
 Status mapping: `confirmation` -> `confirmed`, `rejection` -> `rejected`,
 `interview` -> `interview`. `applied` is what the user writes by hand when
@@ -82,7 +91,7 @@ written:
 ```
   + 9/3  Analytics Engineer        Northwind Robotics   confirmed  (new row)
   ~ 8/25 Data Engineer             Vantage Grid         rejected   (row 5)
-  ? 9/3  ???                       Meridian Health      confirmed  (generic Workday mail)
+  + 9/3  (unknown)                 Meridian Health      confirmed  (generic Workday mail)
   - 9/3  job alert digest          -                    -          (will be labeled only)
 ```
 
@@ -94,8 +103,9 @@ Stop and ask. Apply any correction the user gives - a company name, a role, a
 row number, a reclassification - and re-print the table if the change is
 substantial. Only proceed on an explicit go-ahead.
 
-If any row is still `?` after the user answers, it must become a real value or
-be dropped from the payload. It cannot be committed as `?`.
+If a company or a row match is still `?` after the user answers, it must
+become a real value or be dropped from the payload. It cannot be committed as
+`?`.
 
 ## 6. Commit
 

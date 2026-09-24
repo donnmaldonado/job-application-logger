@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateCommitPayload, collectMessageIds } from '../src/schema.js';
+import { validateCommitPayload, collectMessageIds, UNKNOWN_ROLE } from '../src/schema.js';
 
 const validAppend = {
   updated: '9/3',
@@ -63,12 +63,32 @@ test('status is a closed set', () => {
   }
 });
 
-test('appends require updated, role, company and status', () => {
+test('appends require updated, company and status', () => {
   const { errors } = validateCommitPayload({ appends: [{}] });
   assert.match(errors.join('\n'), /appends\[0\]\.updated is required/);
-  assert.match(errors.join('\n'), /appends\[0\]\.role is required/);
   assert.match(errors.join('\n'), /appends\[0\]\.company is required/);
   assert.match(errors.join('\n'), /appends\[0\]\.status is required/);
+  assert.doesNotMatch(errors.join('\n'), /\.role/);
+});
+
+test('a missing or blank role is logged as (unknown)', () => {
+  const { role: _omitted, ...noRole } = validAppend;
+  for (const append of [noRole, { ...validAppend, role: '' }, { ...validAppend, role: '  ' }]) {
+    const { valid, errors, payload } = validateCommitPayload({ appends: [append] });
+    assert.equal(valid, true, errors.join('\n'));
+    assert.equal(payload.appends[0].role, UNKNOWN_ROLE);
+  }
+  assert.equal(UNKNOWN_ROLE, '(unknown)');
+});
+
+test('a "?" role and an empty or "?" company are still refused', () => {
+  for (const append of [
+    { ...validAppend, role: '?' },
+    { ...validAppend, company: '' },
+    { ...validAppend, company: '?' },
+  ]) {
+    assert.equal(validateCommitPayload({ appends: [append] }).valid, false, JSON.stringify(append));
+  }
 });
 
 test('an unresolved "?" never reaches the sheet', () => {
@@ -105,7 +125,7 @@ test('every error in a bad payload is reported at once', () => {
     appends: [{ updated: '9/3' }],
     updates: [{ row: -1 }],
   });
-  assert.ok(errors.length >= 5, `expected several errors, got ${errors.length}`);
+  assert.ok(errors.length >= 4, `expected several errors, got ${errors.length}`);
 });
 
 test('collectMessageIds de-duplicates across all three sections', () => {

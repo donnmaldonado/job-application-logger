@@ -150,6 +150,14 @@ test('updates address the Status and Last Heard cells only', () => {
   );
 });
 
+test('an append with no role plans (unknown) in the role cell', () => {
+  const { sheet, plan } = planFor({
+    appends: [{ updated: '9/19', company: 'Thesis', status: 'confirmed', messageIds: ['msg-generic'] }],
+  });
+  assert.equal(plan.appendRows[0][sheet.indices.role], '(unknown)');
+  assert.equal(plan.appendRows[0][sheet.indices.company], 'Thesis');
+});
+
 test('an update to a row that does not exist is refused before any write', () => {
   const { payload, sheet } = planFor({ updates: [{ row: 900, status: 'rejected' }] });
   const errors = preflightErrors(sheet, payload, fixture.sheet.values);
